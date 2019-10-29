@@ -1,0 +1,4 @@
+mne
+scipy
+numpy
+pandas
