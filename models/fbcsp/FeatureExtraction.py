@@ -3,6 +3,7 @@ from signal_processing import filter_bank
 import numpy as np
 
 
+# TODO Should receive left and right data and should have the name Features
 class FeatureExtraction:
     def __init__(self, csp, eeg):
         left_bands_data = filter_bank(eeg.left_data)
@@ -10,8 +11,10 @@ class FeatureExtraction:
 
         self.y = eeg.labels
         self.features = self.extract_features(csp, left_bands_data, right_bands_data)
+        self.n_features = self.features.shape[1]
 
     def extract_features(self, csp, left_bands, right_bands):
+        print("Extracting features ...")
         features = None
         for n_band in range(0, left_bands.shape[0]):
             print("Band ", n_band + 1)
