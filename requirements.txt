@@ -1,3 +1,4 @@
+scikit-learn
 mne
 scipy
 numpy

@@ -16,7 +16,7 @@ def filter_in_all_frequency_bands(trial):
         if low_freq == LOW_FREQS[-1]:
             break
 
-        high_freq = low_freq+4
+        high_freq = LOW_FREQS[n_low_freq+1]
 
         # Create a 5 order butter-worth filter to the specific band (low_freq - high_freq)
         b, a = signal.butter(5, [low_freq/NYQUIST, high_freq/NYQUIST], btype="bandpass")

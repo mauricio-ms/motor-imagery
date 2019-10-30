@@ -1,16 +1,57 @@
-from data_preparation import load_csv, extract_single_trial
-from signal_processing import filter_bank
+from Eeg import Eeg
+from FeatureExtraction import FeatureExtraction
+from mne.decoding import CSP
+
+from sklearn.feature_selection import SelectKBest
+from sklearn.feature_selection import mutual_info_classif
+from sklearn import preprocessing
+from sklearn import svm
+from sklearn.metrics import accuracy_score
+
 
 TIME_WINDOW = 750
 
 # Load training data
-left_hand_training_data = load_csv("data/bnci/by-subject-complete/lefthand-training-subject-2.csv")
-right_hand_training_data = load_csv("data/bnci/by-subject-complete/righthand-training-subject-2.csv")
+print("Loading training data ...")
+training_data = Eeg("data/bnci/by-subject-complete/lefthand-training-subject-2.csv",
+                    "data/bnci/by-subject-complete/righthand-training-subject-2.csv", TIME_WINDOW)
 
-# Epoch data
-left_training = extract_single_trial(left_hand_training_data, TIME_WINDOW)
-right_training = extract_single_trial(right_hand_training_data, TIME_WINDOW)
+# Training feature extraction
+print("Extracting training features ...")
+csp = CSP(n_components=2, reg=None, log=True, norm_trace=False)
+training_features = FeatureExtraction(csp, training_data)
 
-# Filter Bank
-left_bands_training = filter_bank(left_training)
-right_bands_training = filter_bank(right_training)
+# Load test data
+print("Loading test data ...")
+test_data = Eeg("data/bnci/by-subject-complete/lefthand-test-subject-2.csv",
+                "data/bnci/by-subject-complete/righthand-test-subject-2.csv", TIME_WINDOW)
+
+# Test feature extraction
+print("Extracting test features ...")
+test_features = FeatureExtraction(csp, test_data)
+
+# Feature selection
+# MIBIF algorithm
+select_K = SelectKBest(mutual_info_classif, k=10).fit(training_features.features, training_features.y)
+
+print(training_features.features.shape)
+print(test_features.features.shape)
+
+New_train = select_K.transform(training_features.features)
+New_test = select_K.transform(test_features.features)
+
+print(New_train.shape)
+print(New_test.shape)
+
+ss = preprocessing.StandardScaler()
+X_select_train = ss.fit_transform(New_train, training_features.y)
+X_select_test = ss.fit_transform(New_test)
+
+#calssify
+clf = svm.SVC(C=0.8, kernel="rbf")
+clf.fit(X_select_train, training_features.y)
+y_pred = clf.predict(X_select_test)
+print(test_features.y)
+print(y_pred)
+acc = accuracy_score(test_features.y, y_pred)
+print(acc)
