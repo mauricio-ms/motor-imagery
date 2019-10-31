@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import signal
 
-FS = 250
+FS = 128
 NYQUIST = 0.5 * FS
 
 LOW_FREQS = range(4, 41, 4)
