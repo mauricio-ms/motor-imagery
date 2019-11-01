@@ -1,22 +1,23 @@
 from Eeg import Eeg
 from FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
 from MIBIFFeatureSelection import MIBIFFeatureSelection
-from MIBIFFeatureSelection2 import MIBIFFeatureSelection2
+# from MIBIFFeatureSelection2 import MIBIFFeatureSelection2 as MIBIFFeatureSelection
+from Svm import Svm
+from Lda import Lda
 from mne.decoding import CSP
-
-from sklearn import svm
-from sklearn.metrics import accuracy_score
+from evaluation import print_accuracies, print_mean_accuracies
 
 import numpy as np
 
 
 TIME_WINDOW = 750
 CSP_RELEVANT_FEATURES = 2
-K = 15
+
 subjects = range(1, 10)
-accuracies = {}
-for k in range(1, K+1):
-    accuracies[k] = np.zeros(len(subjects))
+accuracies = {
+    "svm": {},
+    "lda": {}
+}
 
 for subject in subjects:
     print("Subject: ", subject)
@@ -41,7 +42,12 @@ for subject in subjects:
     test_features = FilterBankCSPFeatureExtraction(csp, test_data)
 
     # Feature selection
-    for k in range(1, K+1):
+    for k in range(1, training_features.n_features+1):
+        if k not in accuracies["svm"]:
+            accuracies["svm"][k] = np.zeros(len(subjects))
+        if k not in accuracies["lda"]:
+            accuracies["lda"][k] = np.zeros(len(subjects))
+
         scale = True
         fs = MIBIFFeatureSelection(training_features, test_features, k, scale)
 
@@ -49,22 +55,28 @@ for subject in subjects:
         selected_test_features = fs.test_features
 
         # SVM classifier
-        kernel = "linear"
-        C = 0.8
-        clf = svm.SVC(C=C, kernel=kernel) if scale else svm.SVC(C=C, gamma="scale", kernel=kernel)
-        clf.fit(selected_training_features, training_features.y)
-        y_pred = clf.predict(selected_test_features)
-        acc = accuracy_score(test_features.y, y_pred)
-        print(acc)
-        accuracies[k][subject-1] = acc
+        svm_accuracy = Svm("linear", 0.8, not scale,
+                           selected_training_features, training_features.y,
+                           selected_test_features, test_features.y).get_accuracy()
+        print("SVM accuracy:", svm_accuracy)
+        accuracies["svm"][k][subject-1] = svm_accuracy
 
-print("Accuracies")
-for k in range(1, K+1):
-    print("================== k: ", k)
-    for subject in subjects:
-        print("Subject %s: %s" % (subject, accuracies[k][subject-1]))
-    print("Mean accuracy: %s\n\n" % (np.mean(accuracies[k])))
+        # LDA classifier
+        lda_accuracy = Lda(selected_training_features, training_features.y,
+                           selected_test_features, test_features.y).get_accuracy()
+        print("LDA accuracy:", lda_accuracy)
+        accuracies["lda"][k][subject - 1] = svm_accuracy
 
-print("Mean accuracies")
-for k in range(1, K+1):
-    print("k %s: %s" % (k, np.mean(accuracies[k])))
+print("== SVM ACCURACIES ==")
+print_accuracies(accuracies["svm"], subjects)
+
+print("== LDA ACCURACIES ==")
+print_accuracies(accuracies["lda"], subjects)
+
+print("== SVM MEAN ACCURACIES ==")
+print_mean_accuracies(accuracies["svm"])
+
+print()
+
+print("== LDA MEAN ACCURACIES ==")
+print_mean_accuracies(accuracies["lda"])
