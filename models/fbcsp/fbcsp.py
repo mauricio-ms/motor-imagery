@@ -1,6 +1,7 @@
 from Eeg import Eeg
 from FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
 from MIBIFFeatureSelection import MIBIFFeatureSelection
+from MIBIFFeatureSelection2 import MIBIFFeatureSelection2
 from mne.decoding import CSP
 
 from sklearn import svm
@@ -11,9 +12,12 @@ import numpy as np
 
 TIME_WINDOW = 750
 CSP_RELEVANT_FEATURES = 2
-
+K = 15
 subjects = range(1, 10)
-accuracies = np.zeros(len(subjects))
+accuracies = {}
+for k in range(1, K+1):
+    accuracies[k] = np.zeros(len(subjects))
+
 for subject in subjects:
     print("Subject: ", subject)
 
@@ -37,42 +41,30 @@ for subject in subjects:
     test_features = FilterBankCSPFeatureExtraction(csp, test_data)
 
     # Feature selection
-    # MIBIF algorithm
-    k = 4
-    scale = False
-    fs = MIBIFFeatureSelection(training_features, test_features, k, scale)
-    training_features.features = fs.training_features
-    test_features.features = fs.test_features
+    for k in range(1, K+1):
+        scale = True
+        fs = MIBIFFeatureSelection(training_features, test_features, k, scale)
 
-    # ss = preprocessing.StandardScaler()
-    # training_features.features = ss.fit_transform(training_features.features[:, selected_features], training_features.y)
-    # test_features.features = ss.fit_transform(test_features.features[:, selected_features])
+        selected_training_features = fs.training_features
+        selected_test_features = fs.test_features
 
-    # select_K = SelectKBest(mutual_info_classif, k=10).fit(training_features.features, training_features.y)
-    #
-    # print(training_features.features.shape)
-    # print(test_features.features.shape)
-    #
-    # New_train = select_K.transform(training_features.features)
-    # New_test = select_K.transform(test_features.features)
-    #
-    # print(New_train.shape)
-    # print(New_test.shape)
-
-    # ss = preprocessing.StandardScaler()
-    # X_select_train = ss.fit_transform(New_train, training_features.y)
-    # X_select_test = ss.fit_transform(New_test)
-
-    # SVM classifier
-    clf = svm.SVC(C=0.8, gamma="scale", kernel="rbf")
-    clf.fit(training_features.features, training_features.y)
-    y_pred = clf.predict(test_features.features)
-    acc = accuracy_score(test_features.y, y_pred)
-    print(acc)
-    accuracies[subject-1] = acc
+        # SVM classifier
+        kernel = "linear"
+        C = 0.8
+        clf = svm.SVC(C=C, kernel=kernel) if scale else svm.SVC(C=C, gamma="scale", kernel=kernel)
+        clf.fit(selected_training_features, training_features.y)
+        y_pred = clf.predict(selected_test_features)
+        acc = accuracy_score(test_features.y, y_pred)
+        print(acc)
+        accuracies[k][subject-1] = acc
 
 print("Accuracies")
-for subject in subjects:
-    print("Subject %s: %s" % (subject, accuracies[subject-1]))
+for k in range(1, K+1):
+    print("================== k: ", k)
+    for subject in subjects:
+        print("Subject %s: %s" % (subject, accuracies[k][subject-1]))
+    print("Mean accuracy: %s\n\n" % (np.mean(accuracies[k])))
 
-print("Mean accuracy: ", np.mean(accuracies))
+print("Mean accuracies")
+for k in range(1, K+1):
+    print("k %s: %s" % (k, np.mean(accuracies[k])))

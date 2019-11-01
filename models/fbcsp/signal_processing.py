@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import signal
 
-FS = 128
+FS = 250
 NYQUIST = 0.5 * FS
 
 LOW_FREQS = range(4, 41, 4)
@@ -18,11 +18,12 @@ def filter_in_all_frequency_bands(trial):
 
         high_freq = LOW_FREQS[n_low_freq+1]
 
-        # Create a 5 order butter-worth filter to the specific band (low_freq - high_freq)
-        b, a = signal.butter(5, [low_freq/NYQUIST, high_freq/NYQUIST], btype="bandpass")
+        # Create a 5 order Chebyshev Type 2 filter to the specific band (low_freq - high_freq)
+        b, a = signal.cheby2(5, low_freq/NYQUIST, [low_freq, high_freq], btype="bandpass", fs=250)
 
-        for n_channel in range(n_channels):
-            filtered_signals[n_low_freq, :, n_channel] = signal.filtfilt(b, a, trial[:, n_channel])
+        filtered_signals[n_low_freq, :, :] = signal.filtfilt(b, a, trial, axis=0)
+        # for n_channel in range(n_channels):
+        #     filtered_signals[n_low_freq, :, n_channel] = signal.filtfilt(b, a, trial[:, n_channel])
 
     return filtered_signals
 
@@ -34,3 +35,5 @@ def filter_bank(eeg):
         filtered_signals[:, n_trial, :, :] = filter_in_all_frequency_bands(trial)
 
     return filtered_signals
+
+# def bandpass_filter(data):
