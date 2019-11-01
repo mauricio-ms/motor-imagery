@@ -19,7 +19,7 @@ def filter_in_all_frequency_bands(trial):
         high_freq = LOW_FREQS[n_low_freq+1]
 
         # Create a 5 order Chebyshev Type 2 filter to the specific band (low_freq - high_freq)
-        b, a = signal.cheby2(5, low_freq/NYQUIST, [low_freq, high_freq], btype="bandpass", fs=250)
+        b, a = signal.cheby2(5, 0.5, [low_freq, high_freq], btype="bandpass", fs=250)
 
         filtered_signals[n_low_freq, :, :] = signal.filtfilt(b, a, trial, axis=0)
         # for n_channel in range(n_channels):
