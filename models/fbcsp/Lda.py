@@ -7,8 +7,8 @@ class Lda:
     def __init__(self, training_features, y_training, test_features, y_test):
         self.training_features = training_features
         self.y_training = y_training
-        self.y_test = y_test
         self.test_features = test_features
+        self.y_test = y_test
 
     def get_accuracy(self):
         clf = LinearDiscriminantAnalysis()

@@ -1,4 +1,5 @@
 from Eeg import Eeg
+from signal_processing import bandpass_filter
 from FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
 from MIBIFFeatureSelection import MIBIFFeatureSelection
 # from MIBIFFeatureSelection2 import MIBIFFeatureSelection2 as MIBIFFeatureSelection
@@ -26,6 +27,7 @@ for subject in subjects:
     print("Loading training data ...")
     training_data = Eeg(f"data/bnci/by-subject-complete/lefthand-training-subject-{subject}.csv",
                         f"data/bnci/by-subject-complete/righthand-training-subject-{subject}.csv", TIME_WINDOW)
+    bandpass_filter(training_data)
 
     # Training feature extraction
     print("Extracting training features ...")
@@ -36,6 +38,7 @@ for subject in subjects:
     print("Loading test data ...")
     test_data = Eeg(f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.csv",
                     f"data/bnci/by-subject-complete/righthand-test-subject-{subject}.csv", TIME_WINDOW, False)
+    bandpass_filter(test_data)
 
     # Test feature extraction
     print("Extracting test features ...")
@@ -65,7 +68,7 @@ for subject in subjects:
         lda_accuracy = Lda(selected_training_features, training_features.y,
                            selected_test_features, test_features.y).get_accuracy()
         print("LDA accuracy:", lda_accuracy)
-        accuracies["lda"][k][subject - 1] = svm_accuracy
+        accuracies["lda"][k][subject-1] = lda_accuracy
 
 print("== SVM ACCURACIES ==")
 print_accuracies(accuracies["svm"], subjects)
@@ -80,3 +83,8 @@ print()
 
 print("== LDA MEAN ACCURACIES ==")
 print_mean_accuracies(accuracies["lda"])
+
+svm_mean_accuracies = [np.mean(accuracies["svm"][subject]) for subject in accuracies["svm"]]
+lda_mean_accuracies = [np.mean(accuracies["lda"][subject]) for subject in accuracies["lda"]]
+print("Best SVM (%s - %s): " % (np.argmax(svm_mean_accuracies)+1, np.max(svm_mean_accuracies)))
+print("Best LDA (%s - %s): " % (np.argmax(lda_mean_accuracies)+1, np.max(lda_mean_accuracies)))

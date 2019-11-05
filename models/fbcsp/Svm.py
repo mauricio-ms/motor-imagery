@@ -15,8 +15,8 @@ class Svm:
         self.predicted = self.classify()
 
     def classify(self):
-        clf = svm.SVC(C=self.penalty, kernel=self.kernel) if self.scale \
-            else svm.SVC(C=self.penalty, gamma="scale", kernel=self.kernel)
+        clf = svm.SVC(C=self.penalty, gamma="scale", kernel=self.kernel) if self.scale \
+            else svm.SVC(C=self.penalty, kernel=self.kernel)
         clf.fit(self.training_features, self.y_training)
         return clf.predict(self.test_features)
 
