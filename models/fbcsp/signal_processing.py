@@ -9,7 +9,7 @@ QUANTITY_BANDS = LOW_FREQS[-1]//LOW_FREQS[0]-1
 
 
 def filter_in_all_frequency_bands(trial):
-    n_channels = trial.shape[1]
+    # n_channels = trial.shape[1]
     filtered_signals = np.zeros((QUANTITY_BANDS, *trial.shape))
     for n_low_freq in range(0, len(LOW_FREQS)):
         low_freq = LOW_FREQS[n_low_freq]
@@ -36,4 +36,8 @@ def filter_bank(eeg):
 
     return filtered_signals
 
-# def bandpass_filter(data):
+
+def bandpass_filter(eeg):
+    b, a = signal.cheby2(9, 50, [4, 40], btype="bandpass", fs=250)
+    eeg.left_data = signal.filtfilt(b, a, eeg.left_data, axis=1)
+    eeg.right_data = signal.filtfilt(b, a, eeg.right_data, axis=1)
