@@ -52,9 +52,6 @@ class FilterBankCSPFeatureExtraction:
 
             x = np.concatenate((left_band_training, right_band_training))
 
-            # Reshape to the format expected by MNE Library
-            x = np.transpose(x, [0, 2, 1])
-
             if n_band == 0:
                 features = self.compute_features(x)
             else:
@@ -63,4 +60,4 @@ class FilterBankCSPFeatureExtraction:
         return features
 
     def compute_features(self, x):
-        return self.csp.fit_transform(x, self.y) if self.training else self.csp.transform(x)
+        return self.csp.compute_features(x)

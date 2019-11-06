@@ -7,10 +7,9 @@ from EEG import EEG
 from signal_processing import bandpass_filter
 from FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
 from MIBIFFeatureSelection import MIBIFFeatureSelection
-# from MIBIFFeatureSelection2 import MIBIFFeatureSelection2 as MIBIFFeatureSelection
 from Svm import Svm
 from Lda import Lda
-from mne.decoding import CSP
+from CSP import CSP
 from evaluation import print_accuracies, print_mean_accuracies
 
 import numpy as np
@@ -36,7 +35,7 @@ for subject in subjects:
 
     # Training feature extraction
     print("Extracting training features ...")
-    csp = CSP(n_components=CSP_RELEVANT_FEATURES, reg=None, log=True, norm_trace=False)
+    csp = CSP(training_data.left_data, training_data.right_data)
     training_features = FilterBankCSPFeatureExtraction(csp, training_data)
 
     # Load test data
