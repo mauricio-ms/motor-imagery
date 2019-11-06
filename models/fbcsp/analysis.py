@@ -5,15 +5,11 @@ import matplotlib.pyplot as plt
 import numpy as np
 import itertools
 
-from Eeg import Eeg
+from EEG import EEG
 from mne.decoding import CSP
 from FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
-from MIBIFFeatureSelection import MIBIFFeatureSelection
 from signal_processing import bandpass_filter
-from Svm import Svm
-from Lda import Lda
 from sklearn import preprocessing
-from sklearn.svm import SVC
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import accuracy_score
 
@@ -23,10 +19,8 @@ CSP_RELEVANT_FEATURES = 3
 
 subject = 3
 
-# TODO - Testar manualmente as melhores features
-
 # Load training data
-training_data = Eeg(f"data/bnci/by-subject-complete/lefthand-training-subject-{subject}.csv",
+training_data = EEG(f"data/bnci/by-subject-complete/lefthand-training-subject-{subject}.csv",
                     f"data/bnci/by-subject-complete/righthand-training-subject-{subject}.csv", TIME_WINDOW)
 bandpass_filter(training_data)
 
@@ -35,7 +29,7 @@ csp = CSP(n_components=CSP_RELEVANT_FEATURES, reg=None, log=True, norm_trace=Fal
 training_features = FilterBankCSPFeatureExtraction(csp, training_data)
 
 # Load test data
-test_data = Eeg(f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.csv",
+test_data = EEG(f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.csv",
                 f"data/bnci/by-subject-complete/righthand-test-subject-{subject}.csv", TIME_WINDOW, False)
 bandpass_filter(test_data)
 

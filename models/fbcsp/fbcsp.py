@@ -1,4 +1,9 @@
-from Eeg import Eeg
+"""
+Implementation mainly based on the paper:
+    Filter bank common spatial pattern algorithm on BCI competition IV Datasets 2a and 2b
+"""
+
+from EEG import EEG
 from signal_processing import bandpass_filter
 from FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
 from MIBIFFeatureSelection import MIBIFFeatureSelection
@@ -25,7 +30,7 @@ for subject in subjects:
 
     # Load training data
     print("Loading training data ...")
-    training_data = Eeg(f"data/bnci/by-subject-complete/lefthand-training-subject-{subject}.csv",
+    training_data = EEG(f"data/bnci/by-subject-complete/lefthand-training-subject-{subject}.csv",
                         f"data/bnci/by-subject-complete/righthand-training-subject-{subject}.csv", TIME_WINDOW)
     bandpass_filter(training_data)
 
@@ -36,7 +41,7 @@ for subject in subjects:
 
     # Load test data
     print("Loading test data ...")
-    test_data = Eeg(f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.csv",
+    test_data = EEG(f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.csv",
                     f"data/bnci/by-subject-complete/righthand-test-subject-{subject}.csv", TIME_WINDOW, False)
     bandpass_filter(test_data)
 

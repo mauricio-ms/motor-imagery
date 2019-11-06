@@ -1,5 +1,5 @@
 import mne
-from Eeg import Eeg
+from EEG import EEG
 from mne.datasets import sample
 from scipy import signal
 
@@ -22,7 +22,7 @@ ch_names = ["1", "2", "3"]
 
 info = mne.create_info(ch_names=ch_names, sfreq=250, ch_types=ch_types)
 
-data = Eeg(f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.csv",
+data = EEG(f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.csv",
            f"data/bnci/by-subject-complete/righthand-test-subject-{subject}.csv", 750, False)
 
 left_data = np.transpose(data.left_data[0], [1, 0])
