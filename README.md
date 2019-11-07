@@ -1,46 +1,5 @@
 ## Motor Imagery
 Project to test the accuracy of multiple algorithms published in articles to the EEG binary motor imagery problem
 
-Accuracies (select k)
-Subject 1: 0.6578947368421053
-Subject 2: 0.42857142857142855
-Subject 3: 0.5608695652173913
-Subject 4: 0.9543973941368078
-Subject 5: 0.43223443223443225
-Subject 6: 0.5617529880478087
-Subject 7: 0.7758620689655172
-Subject 8: 0.9043478260869565
-Subject 9: 0.8530612244897959
-
-Accuracies (select k considerando vizinhos)
-Subject 1: 0.6228070175438597
-Subject 2: 0.46530612244897956
-Subject 3: 0.5304347826086957
-Subject 4: 0.9446254071661238
-Subject 5: 0.37362637362637363
-Subject 6: 0.8087649402390438
-Subject 7: 0.41810344827586204
-Subject 8: 0.7565217391304347
-Subject 9: 0.8081632653061225
-
-Accuracies (select k considerando vizinhos)
-Subject 1: 0.6228070175438597
-Subject 2: 0.46530612244897956
-Subject 3: 0.5304347826086957
-Subject 4: 0.9446254071661238
-Subject 5: 0.37362637362637363
-Subject 6: 0.8087649402390438
-Subject 7: 0.41810344827586204
-Subject 8: 0.7565217391304347
-Subject 9: 0.8081632653061225
-
-Accuracies (select k considerando vizinhos escalando com preprocessing.StandardScaler)
-Subject 1: 0.6403508771929824
-Subject 2: 0.4857142857142857
-Subject 3: 0.5130434782608696
-Subject 4: 0.9315960912052117
-Subject 5: 0.39194139194139194
-Subject 6: 0.796812749003984
-Subject 7: 0.3922413793103448
-Subject 8: 0.717391304347826
-Subject 9: 0.7877551020408163
+# Data extraction
+(0.5 - 3.5) seconds by trial

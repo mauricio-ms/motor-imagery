@@ -1,4 +1,4 @@
-from signal_processing import filter_bank
+from signal_processing import filter_bank, QUANTITY_BANDS
 from CSP import CSP
 
 import numpy as np
@@ -8,55 +8,54 @@ class FilterBankCSPFeatureExtraction:
     """
     Class responsible to extract the features based on the raw EEG data
     using the algorithm filter bank CSP
-
     Attributes
     ----------
-    training : bool
-        If the data is training
-    y : 1-d array
-        The labels of the raw data (only when training is True)
-    csp : CSP
-        The MNE Common Spatial Pattern object
-    m : int
-        The dimension of a single feature, in this case, is the number of relevant CSP features used
-    features : n_features-d array
-        The features extracted by the filter-bank CSP algorithm
+    n_components : int
+        The number of components to use as relevant features in the CSP algorithm
+    training_features : n_features-d array
+        The training features extracted by the filter-bank CSP algorithm
+    test_features : n_features-d array
+        The test features extracted by the filter-bank CSP algorithm
     n_features : int
         The number of features extracted by the filter-bank CSP algorithm
     """
-    def __init__(self, eeg):
+    def __init__(self, eeg_training, eeg_test, n_components=2):
         """
         Parameters
         ----------
-        csp : CSP
-            The MNE Common Spatial Pattern object
-        eeg : Eeg
-            The Eeg object that contains the raw eeg data separated by class (left and right)
+        n_components : int
+            The number of components to use as relevant features in the CSP algorithm
+        eeg_training : Eeg
+            The Eeg object that contains the raw training eeg data separated by class (left and right)
+        eeg_test : Eeg
+            The Eeg object that contains the raw test eeg data separated by class (left and right)
         """
-        left_bands_data = filter_bank(eeg.left_data)
-        right_bands_data = filter_bank(eeg.right_data)
+        self.n_components = n_components
+        self.__bands = range(QUANTITY_BANDS)
+        self.__csp_by_band = [CSP(n_components=self.n_components)
+                              for _ in self.__bands]
+        self.training_labels = eeg_training.labels
+        self.test_labels = eeg_test.labels
+        self.training_features = self.extract_features(eeg_training)
+        self.test_features = self.extract_features(eeg_test)
+        self.n_features = self.training_features.shape[1]
+        if self.n_features != self.test_features.shape[1]:
+            raise Exception("The number of features extracted from the training and test dataset's should be equal")
 
-        self.training = eeg.training
-        self.y = eeg.labels
-        self.n_components = None
-        self.features = self.extract_features(left_bands_data, right_bands_data)
-        self.n_features = self.features.shape[1]
-
-    def extract_features(self, left_bands, right_bands):
-        print("Extracting features ...")
-        bands = range(left_bands.shape[0])
-        csp_by_band = [CSP() for _ in bands]
-        self.n_components = csp_by_band[0].n_components
+    def extract_features(self, eeg):
+        left_bands = filter_bank(eeg.left_data)
+        right_bands = filter_bank(eeg.right_data)
 
         features = None
-        for n_band in bands:
-            print("Band ", n_band + 1)
+        for n_band in self.__bands:
             left_band_training = left_bands[n_band]
             right_band_training = right_bands[n_band]
 
             x = np.concatenate((left_band_training, right_band_training))
-            csp = csp_by_band[n_band]
-            csp.fit(left_band_training, right_band_training)
+            csp = self.__csp_by_band[n_band]
+            if eeg.training:
+                csp.fit(left_band_training, right_band_training)
+
             if n_band == 0:
                 features = csp.compute_features(x)
             else:

@@ -18,44 +18,44 @@ class MIBIFFeatureSelection:
     features : (k x feature_extraction.n_features)-d array
         The array with the selected features
     """
-    def __init__(self, training_features_extraction, test_features_extraction, k=4, scale=True):
+    def __init__(self, features, k=4, scale=True):
         """
         Parameters
         ----------
-        feature_extraction : FeatureExtraction
-            The FeatureExtraction object computed
+        features : FilterBankCSPFeatureExtraction
+            The FilterBankCSPFeatureExtraction object with the training and test features computed
         k : int
             The best k features to select
         scale: bool
             If should scale or not the selected features
         """
+        print("Feature selection: ", k)
         self.k = k
-        indexes_selected_features = self.get_indexes_selected_features(training_features_extraction)
+        indexes_selected_features = self.get_indexes_selected_features(features)
         print("Selected features: ", indexes_selected_features)
-        self.training_features = training_features_extraction.features[:, indexes_selected_features]
-        self.test_features = test_features_extraction.features[:, indexes_selected_features]
+        self.training_features = features.training_features[:, indexes_selected_features]
+        self.test_features = features.test_features[:, indexes_selected_features]
 
         if scale:
             scaler = preprocessing.StandardScaler()
-            self.training_features = scaler.fit_transform(self.training_features, training_features_extraction.y)
-            self.test_features = scaler.fit_transform(self.test_features)
+            self.training_features = scaler.fit_transform(self.training_features, features.training_labels)
+            self.test_features = scaler.transform(self.test_features)
 
-    def get_indexes_selected_features(self, training_features_extraction):
-        mutual_info = mutual_info_classif(training_features_extraction.features, training_features_extraction.y)
+    def get_indexes_selected_features(self, features):
+        mutual_info = mutual_info_classif(features.training_features, features.training_labels)
         mutual_info_indexes = np.argsort(mutual_info)[::-1]
 
-        start_features = range(0, training_features_extraction.n_features, training_features_extraction.n_components)
+        start_features = range(0, features.n_features, features.n_components)
         indexes_selected_features = None
         for selected_feature in mutual_info_indexes[0:self.k]:
             start_feature = MIBIFFeatureSelection.get_start_feature(start_features, selected_feature,
-                                                                    training_features_extraction.n_components)
-            end_feature = min(start_feature + training_features_extraction.n_components - 1,
-                              training_features_extraction.n_features)
-            features = np.asarray(range(start_feature, end_feature + 1))
+                                                                    features.n_components)
+            end_feature = min(start_feature + features.n_components - 1, features.n_features)
+            next_features = np.asarray(range(start_feature, end_feature + 1))
             if indexes_selected_features is None:
-                indexes_selected_features = features
+                indexes_selected_features = next_features
             else:
-                indexes_selected_features = np.concatenate((indexes_selected_features, features))
+                indexes_selected_features = np.concatenate((indexes_selected_features, next_features))
 
         return np.unique(np.sort(indexes_selected_features))
 
