@@ -32,7 +32,7 @@ class FilterBankCSPFeatureExtraction:
         """
         self.n_components = n_components
         self.__bands = range(QUANTITY_BANDS)
-        self.__csp_by_band = [CSP(n_components=self.n_components)
+        self.__csp_by_band = [CSP(average_trial_covariance=False, n_components=self.n_components)
                               for _ in self.__bands]
         self.training_labels = eeg_training.labels
         self.test_labels = eeg_test.labels

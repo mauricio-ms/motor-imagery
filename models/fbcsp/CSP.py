@@ -3,7 +3,8 @@ from scipy import linalg
 
 
 class CSP:
-    def __init__(self, n_components=2):
+    def __init__(self, average_trial_covariance=False, n_components=2):
+        self.average_trial_covariance = average_trial_covariance
         self.n_components = n_components
         self.__m = n_components//2
         self.fitted = False
@@ -20,12 +21,14 @@ class CSP:
         self.fitted = True
 
     def __compute_transformation_matrix(self):
-        # TODO: test with param average_trial_covariance
-
-        # To compute the covariance matrix, is necessary 2-D matrices (channels, observations)
-        # So, here we concatenate the time and trials
-        s1 = np.cov(np.transpose(np.concatenate(self.left_data, axis=0)))
-        s2 = np.cov(np.transpose(np.concatenate(self.right_data, axis=0)))
+        if self.average_trial_covariance:
+            s1 = np.mean([np.cov(np.transpose(trial)) for trial in self.left_data], axis=0)
+            s2 = np.mean([np.cov(np.transpose(trial)) for trial in self.right_data], axis=0)
+        else:
+            # To compute the covariance matrix, is necessary 2-D matrices (channels, observations)
+            # So, here we concatenate the time and trials
+            s1 = np.cov(np.transpose(np.concatenate(self.left_data, axis=0)))
+            s2 = np.cov(np.transpose(np.concatenate(self.right_data, axis=0)))
 
         w, v = linalg.eigh(s1, s1+s2)
         return select_cols(v, self.__m)
