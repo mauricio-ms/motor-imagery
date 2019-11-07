@@ -1,4 +1,5 @@
 from signal_processing import filter_bank
+from CSP import CSP
 
 import numpy as np
 
@@ -23,7 +24,7 @@ class FilterBankCSPFeatureExtraction:
     n_features : int
         The number of features extracted by the filter-bank CSP algorithm
     """
-    def __init__(self, csp, eeg):
+    def __init__(self, eeg):
         """
         Parameters
         ----------
@@ -37,27 +38,28 @@ class FilterBankCSPFeatureExtraction:
 
         self.training = eeg.training
         self.y = eeg.labels
-        self.csp = csp
-        self.m = csp.n_components
+        self.n_components = None
         self.features = self.extract_features(left_bands_data, right_bands_data)
         self.n_features = self.features.shape[1]
 
     def extract_features(self, left_bands, right_bands):
         print("Extracting features ...")
+        bands = range(left_bands.shape[0])
+        csp_by_band = [CSP() for _ in bands]
+        self.n_components = csp_by_band[0].n_components
+
         features = None
-        for n_band in range(0, left_bands.shape[0]):
+        for n_band in bands:
             print("Band ", n_band + 1)
             left_band_training = left_bands[n_band]
             right_band_training = right_bands[n_band]
 
             x = np.concatenate((left_band_training, right_band_training))
-
+            csp = csp_by_band[n_band]
+            csp.fit(left_band_training, right_band_training)
             if n_band == 0:
-                features = self.compute_features(x)
+                features = csp.compute_features(x)
             else:
-                features = np.concatenate((features, self.compute_features(x)), axis=1)
+                features = np.concatenate((features, csp.compute_features(x)), axis=1)
 
         return features
-
-    def compute_features(self, x):
-        return self.csp.compute_features(x)

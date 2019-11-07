@@ -9,7 +9,6 @@ from FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
 from MIBIFFeatureSelection import MIBIFFeatureSelection
 from Svm import Svm
 from Lda import Lda
-from CSP import CSP
 from evaluation import print_accuracies, print_mean_accuracies
 
 import numpy as np
@@ -31,22 +30,21 @@ for subject in subjects:
     print("Loading training data ...")
     training_data = EEG(f"data/bnci/by-subject-complete/lefthand-training-subject-{subject}.csv",
                         f"data/bnci/by-subject-complete/righthand-training-subject-{subject}.csv", TIME_WINDOW)
-    bandpass_filter(training_data)
+    # bandpass_filter(training_data)
 
     # Training feature extraction
     print("Extracting training features ...")
-    csp = CSP(training_data.left_data, training_data.right_data)
-    training_features = FilterBankCSPFeatureExtraction(csp, training_data)
+    training_features = FilterBankCSPFeatureExtraction(training_data)
 
     # Load test data
     print("Loading test data ...")
     test_data = EEG(f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.csv",
                     f"data/bnci/by-subject-complete/righthand-test-subject-{subject}.csv", TIME_WINDOW, False)
-    bandpass_filter(test_data)
+    # bandpass_filter(test_data)
 
     # Test feature extraction
     print("Extracting test features ...")
-    test_features = FilterBankCSPFeatureExtraction(csp, test_data)
+    test_features = FilterBankCSPFeatureExtraction(test_data)
 
     # Feature selection
     for k in range(1, training_features.n_features+1):

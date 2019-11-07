@@ -44,12 +44,12 @@ class MIBIFFeatureSelection:
         mutual_info = mutual_info_classif(training_features_extraction.features, training_features_extraction.y)
         mutual_info_indexes = np.argsort(mutual_info)[::-1]
 
-        start_features = range(0, training_features_extraction.n_features, training_features_extraction.m)
+        start_features = range(0, training_features_extraction.n_features, training_features_extraction.n_components)
         indexes_selected_features = None
         for selected_feature in mutual_info_indexes[0:self.k]:
             start_feature = MIBIFFeatureSelection.get_start_feature(start_features, selected_feature,
-                                                                    training_features_extraction.m)
-            end_feature = min(start_feature + training_features_extraction.m - 1,
+                                                                    training_features_extraction.n_components)
+            end_feature = min(start_feature + training_features_extraction.n_components - 1,
                               training_features_extraction.n_features)
             features = np.asarray(range(start_feature, end_feature + 1))
             if indexes_selected_features is None:

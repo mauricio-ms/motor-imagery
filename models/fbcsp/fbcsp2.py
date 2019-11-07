@@ -4,7 +4,6 @@ Implementation mainly based on the paper:
 """
 
 from EEG import EEG
-from CSP import CSP
 from FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
 from MIBIFFeatureSelection import MIBIFFeatureSelection
 from Svm import Svm
@@ -24,9 +23,7 @@ training_data = EEG(f"data/bnci/by-subject-complete/lefthand-training-subject-{s
 
 # Training feature extraction
 print("Extracting training features ...")
-csp = CSP(training_data.left_data, training_data.right_data)
-
-training_features = FilterBankCSPFeatureExtraction(csp, training_data)
+training_features = FilterBankCSPFeatureExtraction(training_data)
 
 # Load test data
 print("Loading test data ...")
@@ -36,7 +33,7 @@ test_data = EEG(f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.
 
 # Test feature extraction
 print("Extracting test features ...")
-test_features = FilterBankCSPFeatureExtraction(csp, test_data)
+test_features = FilterBankCSPFeatureExtraction(test_data)
 
 # # Feature selection
 # for k in range(1, training_features.n_features+1):
