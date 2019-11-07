@@ -1,3 +1,4 @@
+from mne.decoding import CSP
 from signal_processing import filter_bank
 
 import numpy as np
@@ -23,29 +24,35 @@ class FilterBankCSPFeatureExtraction:
     n_features : int
         The number of features extracted by the filter-bank CSP algorithm
     """
-    def __init__(self, csp, eeg):
+    def __init__(self, eeg, n_components=2, csp_by_band=None):
         """
         Parameters
         ----------
-        csp : CSP
-            The MNE Common Spatial Pattern object
+        n_components : int
+            The number of components to use as relevant features in the CSP algorithm
         eeg : Eeg
             The Eeg object that contains the raw eeg data separated by class (left and right)
         """
         left_bands_data = filter_bank(eeg.left_data)
         right_bands_data = filter_bank(eeg.right_data)
 
+        self.n_components = n_components
+        self.__bands = range(left_bands_data.shape[0])
+        if csp_by_band is None:
+            self.csp_by_band = [CSP(n_components=self.n_components, reg=None, log=True, norm_trace=False)
+                                for _ in self.__bands]
+        else:
+            self.csp_by_band = csp_by_band
+
         self.training = eeg.training
         self.y = eeg.labels
-        self.csp = csp
-        self.m = csp.n_components
         self.features = self.extract_features(left_bands_data, right_bands_data)
         self.n_features = self.features.shape[1]
 
     def extract_features(self, left_bands, right_bands):
         print("Extracting features ...")
         features = None
-        for n_band in range(0, left_bands.shape[0]):
+        for n_band in self.__bands:
             print("Band ", n_band + 1)
             left_band_training = left_bands[n_band]
             right_band_training = right_bands[n_band]
@@ -54,13 +61,14 @@ class FilterBankCSPFeatureExtraction:
 
             # Reshape to the format expected by MNE Library
             x = np.transpose(x, [0, 2, 1])
+            csp = self.csp_by_band[n_band]
 
             if n_band == 0:
-                features = self.compute_features(x)
+                features = self.compute_features(csp, x)
             else:
-                features = np.concatenate((features, self.compute_features(x)), axis=1)
+                features = np.concatenate((features, self.compute_features(csp, x)), axis=1)
 
         return features
 
-    def compute_features(self, x):
-        return self.csp.fit_transform(x, self.y) if self.training else self.csp.transform(x)
+    def compute_features(self, csp, x):
+        return csp.fit_transform(x, self.y) if self.training else csp.transform(x)

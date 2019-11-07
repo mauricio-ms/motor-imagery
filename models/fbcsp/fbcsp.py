@@ -10,14 +10,12 @@ from MIBIFFeatureSelection import MIBIFFeatureSelection
 # from MIBIFFeatureSelection2 import MIBIFFeatureSelection2 as MIBIFFeatureSelection
 from Svm import Svm
 from Lda import Lda
-from mne.decoding import CSP
 from evaluation import print_accuracies, print_mean_accuracies
 
 import numpy as np
 
 
 TIME_WINDOW = 750
-CSP_RELEVANT_FEATURES = 2
 
 subjects = range(1, 10)
 accuracies = {
@@ -36,8 +34,7 @@ for subject in subjects:
 
     # Training feature extraction
     print("Extracting training features ...")
-    csp = CSP(n_components=CSP_RELEVANT_FEATURES, reg=None, log=True, norm_trace=False)
-    training_features = FilterBankCSPFeatureExtraction(csp, training_data)
+    training_features = FilterBankCSPFeatureExtraction(training_data)
 
     # Load test data
     print("Loading test data ...")
@@ -47,7 +44,7 @@ for subject in subjects:
 
     # Test feature extraction
     print("Extracting test features ...")
-    test_features = FilterBankCSPFeatureExtraction(csp, test_data)
+    test_features = FilterBankCSPFeatureExtraction(test_data, csp_by_band=training_features.csp_by_band)
 
     # Feature selection
     for k in range(1, training_features.n_features+1):
