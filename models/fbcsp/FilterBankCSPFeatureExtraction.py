@@ -1,5 +1,5 @@
 from mne.decoding import CSP
-from signal_processing import filter_bank
+from signal_processing import filter_bank, QUANTITY_BANDS
 
 import numpy as np
 
@@ -11,46 +11,43 @@ class FilterBankCSPFeatureExtraction:
 
     Attributes
     ----------
-    training : bool
-        If the data is training
-    y : 1-d array
-        The labels of the raw data (only when training is True)
-    csp : CSP
-        The MNE Common Spatial Pattern object
-    m : int
-        The dimension of a single feature, in this case, is the number of relevant CSP features used
-    features : n_features-d array
-        The features extracted by the filter-bank CSP algorithm
+    n_components : int
+        The number of components to use as relevant features in the CSP algorithm
+    training_features : n_features-d array
+        The training features extracted by the filter-bank CSP algorithm
+    test_features : n_features-d array
+        The test features extracted by the filter-bank CSP algorithm
     n_features : int
         The number of features extracted by the filter-bank CSP algorithm
     """
-    def __init__(self, eeg, n_components=2, csp_by_band=None):
+    def __init__(self, eeg_training, eeg_test, n_components=2):
         """
         Parameters
         ----------
         n_components : int
             The number of components to use as relevant features in the CSP algorithm
-        eeg : Eeg
-            The Eeg object that contains the raw eeg data separated by class (left and right)
+        eeg_training : Eeg
+            The Eeg object that contains the raw training eeg data separated by class (left and right)
+        eeg_test : Eeg
+            The Eeg object that contains the raw test eeg data separated by class (left and right)
         """
-        left_bands_data = filter_bank(eeg.left_data)
-        right_bands_data = filter_bank(eeg.right_data)
-
         self.n_components = n_components
-        self.__bands = range(left_bands_data.shape[0])
-        if csp_by_band is None:
-            self.csp_by_band = [CSP(n_components=self.n_components, reg=None, log=True, norm_trace=False)
-                                for _ in self.__bands]
-        else:
-            self.csp_by_band = csp_by_band
+        self.__bands = range(QUANTITY_BANDS)
+        self.__csp_by_band = [CSP(n_components=self.n_components, reg=None, log=True, norm_trace=False)
+                              for _ in self.__bands]
+        self.training_labels = eeg_training.labels
+        self.test_labels = eeg_test.labels
+        self.training_features = self.extract_features(eeg_training)
+        self.test_features = self.extract_features(eeg_test)
+        self.n_features = self.training_features.shape[1]
+        if self.n_features != self.test_features.shape[1]:
+            raise Exception("The number of features extracted from the training and test dataset's should be equal")
 
-        self.training = eeg.training
-        self.y = eeg.labels
-        self.features = self.extract_features(left_bands_data, right_bands_data)
-        self.n_features = self.features.shape[1]
-
-    def extract_features(self, left_bands, right_bands):
+    def extract_features(self, eeg):
         print("Extracting features ...")
+        left_bands = filter_bank(eeg.left_data)
+        right_bands = filter_bank(eeg.right_data)
+
         features = None
         for n_band in self.__bands:
             print("Band ", n_band + 1)
@@ -61,14 +58,15 @@ class FilterBankCSPFeatureExtraction:
 
             # Reshape to the format expected by MNE Library
             x = np.transpose(x, [0, 2, 1])
-            csp = self.csp_by_band[n_band]
+            csp = self.__csp_by_band[n_band]
 
             if n_band == 0:
-                features = self.compute_features(csp, x)
+                features = self.compute_features(eeg, csp, x)
             else:
-                features = np.concatenate((features, self.compute_features(csp, x)), axis=1)
+                features = np.concatenate((features, self.compute_features(eeg, csp, x)), axis=1)
 
         return features
 
-    def compute_features(self, csp, x):
-        return csp.fit_transform(x, self.y) if self.training else csp.transform(x)
+    @staticmethod
+    def compute_features(eeg, csp, x):
+        return csp.fit_transform(x, eeg.labels) if eeg.training else csp.transform(x)

@@ -32,43 +32,38 @@ for subject in subjects:
                         f"data/bnci/by-subject-complete/righthand-training-subject-{subject}.csv", TIME_WINDOW)
     bandpass_filter(training_data)
 
-    # Training feature extraction
-    print("Extracting training features ...")
-    training_features = FilterBankCSPFeatureExtraction(training_data)
-
     # Load test data
     print("Loading test data ...")
     test_data = EEG(f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.csv",
                     f"data/bnci/by-subject-complete/righthand-test-subject-{subject}.csv", TIME_WINDOW, False)
     bandpass_filter(test_data)
 
-    # Test feature extraction
-    print("Extracting test features ...")
-    test_features = FilterBankCSPFeatureExtraction(test_data, csp_by_band=training_features.csp_by_band)
+    # Feature extraction
+    features = FilterBankCSPFeatureExtraction(training_data, test_data)
 
     # Feature selection
-    for k in range(1, training_features.n_features+1):
+    for k in range(1, features.n_features+1):
         if k not in accuracies["svm"]:
             accuracies["svm"][k] = np.zeros(len(subjects))
         if k not in accuracies["lda"]:
             accuracies["lda"][k] = np.zeros(len(subjects))
 
         scale = True
-        fs = MIBIFFeatureSelection(training_features, test_features, k, scale)
+        fs = MIBIFFeatureSelection(features, k, scale)
 
         selected_training_features = fs.training_features
         selected_test_features = fs.test_features
 
         # SVM classifier
         svm_accuracy = Svm("linear", 0.8, not scale,
-                           selected_training_features, training_features.y,
-                           selected_test_features, test_features.y).get_accuracy()
+                           selected_training_features, features.training_labels,
+                           selected_test_features, features.test_labels).get_accuracy()
         print("SVM accuracy:", svm_accuracy)
         accuracies["svm"][k][subject-1] = svm_accuracy
 
         # LDA classifier
-        lda_accuracy = Lda(selected_training_features, training_features.y,
-                           selected_test_features, test_features.y).get_accuracy()
+        lda_accuracy = Lda(selected_training_features, features.training_labels,
+                           selected_test_features, features.test_labels).get_accuracy()
         print("LDA accuracy:", lda_accuracy)
         accuracies["lda"][k][subject-1] = lda_accuracy
 
