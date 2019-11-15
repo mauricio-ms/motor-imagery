@@ -4,7 +4,7 @@ from scipy import signal
 FS = 250
 NYQUIST = 0.5 * FS
 
-LOW_FREQS = range(4, 41, 4)
+LOW_FREQS = range(4, 33, 4)
 QUANTITY_BANDS = LOW_FREQS[-1]//LOW_FREQS[0]-1
 
 
@@ -37,7 +37,11 @@ def filter_bank(eeg):
     return filtered_signals
 
 
-def bandpass_filter(eeg):
-    b, a = signal.cheby2(9, 50, [4, 40], btype="bandpass", fs=250)
-    eeg.left_data = signal.filtfilt(b, a, eeg.left_data, axis=1)
-    eeg.right_data = signal.filtfilt(b, a, eeg.right_data, axis=1)
+def apply_bandpass_filter(eeg):
+    eeg.left_data = bandpass_filter(eeg.left_data)
+    eeg.right_data = bandpass_filter(eeg.right_data)
+
+
+def bandpass_filter(eeg_signal):
+    b, a = signal.cheby2(9, 50, [4, 32], btype="bandpass", fs=250)
+    return signal.filtfilt(b, a, eeg_signal, axis=1)
