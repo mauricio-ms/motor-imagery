@@ -31,6 +31,13 @@ class CSP:
             s2 = np.cov(np.transpose(np.concatenate(self.right_data, axis=0)))
 
         w, v = linalg.eigh(s1, s1+s2)
+
+        # CSP requires the eigenvalues and the eig-vectors be sorted in descending order
+        order_mask = np.argsort(w)
+        order_mask = order_mask[::-1]
+
+        v = v[:, order_mask]
+
         return select_cols(v, self.__m)
 
     def compute_features(self, eeg):
@@ -40,8 +47,8 @@ class CSP:
                 for trial in eeg]
 
     def __compute_features_to_single_trial(self, trial):
-        product = np.dot(np.dot(self.W_b_t, np.transpose(trial)), np.dot(trial, self.W_b))
-        return np.log(np.divide(np.diag(product), np.sum(product)))
+        z = np.dot(trial, self.W_b)
+        return np.log(np.var(z, axis=0))
 
 
 # TODO move this function to an helper appropriated
