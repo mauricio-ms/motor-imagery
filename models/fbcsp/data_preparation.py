@@ -24,5 +24,18 @@ def window_apply(df, mapper, window_size, step):
     return np.squeeze(results)
 
 
-def extract_single_trial(eeg, trial_length):
-    return window_apply(eeg, identity, trial_length, trial_length)
+def extract_single_trial(eeg, trial_length, trial_length_to_extract=None):
+    if trial_length_to_extract is None:
+        trial_length_to_extract = trial_length
+    return window_apply(eeg, identity, trial_length_to_extract, trial_length)
+
+
+def epoch(eeg, size):
+    data = None
+    for trial in eeg:
+        if data is None:
+            data = window_apply(pd.DataFrame(trial), identity, size, size//2)
+        else:
+            data = np.concatenate((data, window_apply(pd.DataFrame(trial), identity, size, size//2)))
+
+    return data
