@@ -15,6 +15,7 @@ import numpy as np
 
 
 TIME_WINDOW = 750
+EPOCH_SIZE = None
 CSP_RELEVANT_FEATURES = 2
 
 subjects = range(1, 10)
@@ -29,14 +30,16 @@ for subject in subjects:
     # Load training data
     print("Loading training data ...")
     training_data = EEG(f"data/bnci/by-subject-complete/lefthand-training-subject-{subject}.csv",
-                        f"data/bnci/by-subject-complete/righthand-training-subject-{subject}.csv", TIME_WINDOW)
-    bandpass_filter(training_data)
+                        f"data/bnci/by-subject-complete/righthand-training-subject-{subject}.csv",
+                        TIME_WINDOW, epoch_size=EPOCH_SIZE)
+    # bandpass_filter(training_data)
 
     # Load test data
     print("Loading test data ...")
     test_data = EEG(f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.csv",
-                    f"data/bnci/by-subject-complete/righthand-test-subject-{subject}.csv", TIME_WINDOW, False)
-    bandpass_filter(test_data)
+                    f"data/bnci/by-subject-complete/righthand-test-subject-{subject}.csv",
+                    TIME_WINDOW, False, EPOCH_SIZE)
+    # bandpass_filter(test_data)
 
     print()
 
