@@ -29,7 +29,6 @@ class MIBIFFeatureSelection:
         scale: bool
             If should scale or not the selected features
         """
-        print("Feature selection: ", k)
         self.k = k
         indexes_selected_features = self.get_indexes_selected_features(features)
         print("Selected features: ", indexes_selected_features)
