@@ -1,5 +1,4 @@
 from data_preparation import read_eeg_file, read_eeg_files
-from EEG import EEG
 from FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
 from MIBIFFeatureSelection import MIBIFFeatureSelection
 from Svm import Svm
@@ -37,7 +36,7 @@ for test_subject in subjects:
     print("Loading test data ...")
     left_data_file = f"data/bnci/by-subject/lefthand-subject-{test_subject}.csv"
     right_data_file = f"data/bnci/by-subject/righthand-subject-{test_subject}.csv"
-    test_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, False, EPOCH_SIZE)
+    test_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, EPOCH_SIZE, False)
 
     # Feature extraction
     print("Extracting features ...")

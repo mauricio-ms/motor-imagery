@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-def read_eeg_files(path_files, time_length, time_window, epoch_size=None):
+def read_eeg_files(path_files, time_length, time_window, epoch_size=None, training=True):
     left_data = None
     right_data = None
     for left_data_file, right_data_file in path_files:
@@ -18,10 +18,10 @@ def read_eeg_files(path_files, time_length, time_window, epoch_size=None):
             left_data = np.concatenate((left_data, next_left_data))
             right_data = np.concatenate((right_data, next_right_data))
 
-    return EEG(left_data, right_data)
+    return EEG(left_data, right_data, training)
 
 
-def read_eeg_file(left_data_file, right_data_file, time_length, time_window, training=True, epoch_size=None):
+def read_eeg_file(left_data_file, right_data_file, time_length, time_window, epoch_size=None, training=True):
     return EEG(*(__read_eeg_file(left_data_file, right_data_file, time_length, time_window, epoch_size)), training)
 
 

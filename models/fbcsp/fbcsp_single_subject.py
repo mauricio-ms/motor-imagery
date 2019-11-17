@@ -1,36 +1,28 @@
-"""
-Implementation mainly based on the paper:
-    Filter bank common spatial pattern algorithm on BCI competition IV Datasets 2a and 2b
-"""
-
-from EEG import EEG
+from data_preparation import read_eeg_file
 from FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
 from MIBIFFeatureSelection import MIBIFFeatureSelection
 from Svm import Svm
 from Lda import Lda
 
 
+TIME_LENGTH = 750
 TIME_WINDOW = 750
 EPOCH_SIZE = None
 CSP_RELEVANT_FEATURES = 2
 
-subject = 1
+subject = 3
 
 # Load training data
 print("Loading training data ...")
-training_data = EEG(f"data/bnci/by-subject-complete/lefthand-training-subject-{subject}.csv",
-                    f"data/bnci/by-subject-complete/righthand-training-subject-{subject}.csv",
-                    TIME_WINDOW, epoch_size=EPOCH_SIZE)
-# bandpass_filter(training_data)
-
-print(training_data.left_data.shape)
+left_data_file = f"data/bnci/by-subject-complete/lefthand-training-subject-{subject}.csv"
+right_data_file = f"data/bnci/by-subject-complete/righthand-training-subject-{subject}.csv"
+training_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, EPOCH_SIZE)
 
 # Load test data
 print("Loading test data ...")
-test_data = EEG(f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.csv",
-                f"data/bnci/by-subject-complete/righthand-test-subject-{subject}.csv",
-                TIME_WINDOW, False, EPOCH_SIZE)
-# bandpass_filter(test_data)
+left_data_file = f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.csv"
+right_data_file = f"data/bnci/by-subject-complete/righthand-test-subject-{subject}.csv"
+test_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, EPOCH_SIZE, False)
 
 # Feature extraction
 features = FilterBankCSPFeatureExtraction(training_data, test_data)

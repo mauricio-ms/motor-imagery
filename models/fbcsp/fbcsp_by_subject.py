@@ -30,13 +30,13 @@ for subject in subjects:
     print("Loading training data ...")
     left_data_file = f"data/bnci/by-subject-data-with-feedback-to-user/lefthand-training-subject-{subject}.csv"
     right_data_file = f"data/bnci/by-subject-data-with-feedback-to-user/righthand-training-subject-{subject}.csv"
-    training_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, epoch_size=EPOCH_SIZE)
+    training_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, EPOCH_SIZE)
 
     # Load test data
     print("Loading test data ...")
     left_data_file = f"data/bnci/by-subject-data-with-feedback-to-user/lefthand-test-subject-{subject}.csv"
     right_data_file = f"data/bnci/by-subject-data-with-feedback-to-user/righthand-test-subject-{subject}.csv"
-    test_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, False, EPOCH_SIZE)
+    test_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, EPOCH_SIZE, False)
 
     # Feature extraction
     print("Extracting features ...")
