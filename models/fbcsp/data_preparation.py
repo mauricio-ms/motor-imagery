@@ -1,18 +1,66 @@
+from main import ROOT_DIR
+from EEG import EEG
+
 import numpy as np
 import pandas as pd
 
-from main import ROOT_DIR
+
+def read_eeg_files(path_files, time_length, time_window, epoch_size=None):
+    left_data = None
+    right_data = None
+    for left_data_file, right_data_file in path_files:
+        next_data = __read_eeg_file(left_data_file, right_data_file, time_length, time_window, epoch_size)
+
+        if left_data is None:
+            left_data, right_data = next_data
+        else:
+            next_left_data, next_right_data = next_data
+            left_data = np.concatenate((left_data, next_left_data))
+            right_data = np.concatenate((right_data, next_right_data))
+
+    return EEG(left_data, right_data)
 
 
-def identity(x):
-    return x
+def read_eeg_file(left_data_file, right_data_file, time_length, time_window, training=True, epoch_size=None):
+    return EEG(*(__read_eeg_file(left_data_file, right_data_file, time_length, time_window, epoch_size)), training)
 
 
-def load_csv(file_path):
+def __read_eeg_file(left_data_file, right_data_file, time_length, time_window, epoch_size=None):
+    # Read the data
+    left_data = __extract_single_trial(__load_csv(left_data_file), time_length, time_window)
+    right_data = __extract_single_trial(__load_csv(right_data_file), time_length, time_window)
+
+    # Read the epoch data
+    if epoch_size is not None:
+        left_data = __epoch(left_data, epoch_size)
+        right_data = __epoch(right_data, epoch_size)
+
+    return left_data, right_data
+
+
+def __load_csv(file_path):
     return pd.read_csv(ROOT_DIR + "/" + file_path, header=None)
 
 
-def window_apply(df, mapper, window_size, step):
+def __epoch(eeg, size):
+    data = None
+    for trial in eeg:
+        single_epoch = __window_apply(pd.DataFrame(trial), __identity, size, size//2)
+        if data is None:
+            data = single_epoch
+        else:
+            data = np.concatenate((data, single_epoch))
+
+    return data
+
+
+def __extract_single_trial(eeg, trial_length, trial_length_to_extract=None):
+    if trial_length_to_extract is None:
+        trial_length_to_extract = trial_length
+    return __window_apply(eeg, __identity, trial_length_to_extract, trial_length)
+
+
+def __window_apply(df, mapper, window_size, step):
     results = []
 
     for x in range(0, df.shape[0], step):
@@ -24,18 +72,5 @@ def window_apply(df, mapper, window_size, step):
     return np.squeeze(results)
 
 
-def extract_single_trial(eeg, trial_length, trial_length_to_extract=None):
-    if trial_length_to_extract is None:
-        trial_length_to_extract = trial_length
-    return window_apply(eeg, identity, trial_length_to_extract, trial_length)
-
-
-def epoch(eeg, size):
-    data = None
-    for trial in eeg:
-        if data is None:
-            data = window_apply(pd.DataFrame(trial), identity, size, size//2)
-        else:
-            data = np.concatenate((data, window_apply(pd.DataFrame(trial), identity, size, size//2)))
-
-    return data
+def __identity(x):
+    return x
