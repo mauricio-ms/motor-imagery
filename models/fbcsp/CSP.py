@@ -1,23 +1,24 @@
 import numpy as np
 from scipy import linalg
+from array_helper import select_cols
+from feature_extraction_functions import log_variance
 
 
 class CSP:
-    def __init__(self, average_trial_covariance=False, n_components=2):
+    def __init__(self, average_trial_covariance=False, n_components=2, compute_features_to_single_trial=log_variance):
         self.average_trial_covariance = average_trial_covariance
         self.n_components = n_components
         self.__m = n_components//2
+        self.compute_features_to_single_trial = compute_features_to_single_trial
         self.fitted = False
         self.left_data = None
         self.right_data = None
-        self.W_b = None
-        self.W_b_t = None
+        self.W = None
 
     def fit(self, left_data, right_data):
         self.left_data = left_data
         self.right_data = right_data
-        self.W_b = self.__compute_transformation_matrix()
-        self.W_b_t = np.transpose(self.W_b)
+        self.W = self.__compute_transformation_matrix()
         self.fitted = True
 
     def __compute_transformation_matrix(self):
@@ -30,7 +31,7 @@ class CSP:
             s1 = np.cov(np.transpose(np.concatenate(self.left_data, axis=0)))
             s2 = np.cov(np.transpose(np.concatenate(self.right_data, axis=0)))
 
-        w, v = linalg.eigh(s1, s1+s2)
+        w, v = linalg.eigh(s2, s1+s2)
 
         # CSP requires the eigenvalues and the eig-vectors be sorted in descending order
         order_mask = np.argsort(w)
@@ -40,18 +41,13 @@ class CSP:
 
         return select_cols(v, self.__m)
 
+    def project(self, trial):
+        if not self.fitted:
+            raise Exception("The model has not yet been fit.")
+        return np.dot(trial, self.W)
+
     def compute_features(self, eeg):
         if not self.fitted:
             raise Exception("The model has not yet been fit.")
-        return [self.__compute_features_to_single_trial(trial)
+        return [self.compute_features_to_single_trial(trial, self.W)
                 for trial in eeg]
-
-    def __compute_features_to_single_trial(self, trial):
-        z = np.dot(trial, self.W_b)
-        return np.log(np.var(z, axis=0))
-
-
-# TODO move this function to an helper appropriated
-def select_cols(w, m):
-    n_cols = w.shape[1]
-    return w[:, [*range(0, m), *range(n_cols-m, w.shape[1])]]
