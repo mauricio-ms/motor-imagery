@@ -2,8 +2,7 @@ from sklearn import svm
 from sklearn.metrics import accuracy_score
 
 
-class Svm:
-    # TODO Adjust the features as a object
+class SVM:
     def __init__(self, kernel, penalty, scale, training_features, y_training, test_features, y_test):
         self.kernel = kernel
         self.penalty = penalty

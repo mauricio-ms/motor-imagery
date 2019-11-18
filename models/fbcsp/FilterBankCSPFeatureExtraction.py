@@ -1,5 +1,5 @@
-from signal_processing import filter_bank, QUANTITY_BANDS
-from CSP import CSP
+from models.signal_processing.signal_processing import filter_bank, QUANTITY_BANDS
+from models.csp.CSP import CSP
 
 import numpy as np
 

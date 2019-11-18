@@ -1,15 +1,13 @@
-# Drawbacks
-- FBCSP has a high computational cost at the training phase since
-it requires a separate feature extractor for each spectral band,
-each of which requires calculation of generalized eigenvectors
-for spatial covariance matrices.
+The method was proposed in the article: Separable Common Spatio-Spectral Patterns for Motor Imagery BCI Systems
 
-- Since each spectral band is treated independently, possible correlations 
-between different EEG rhythms are ignored by the FBCSP method, 
-which in turn causes redundancy in the extracted feature set.
+# Advantages compared to the FBCSP method
+- Has significantly less computational cost for training since it requires
+training of only two CSP-type modules instead of Nf modules in FBCSP.
 
-- FBCSP does not provide any measure for comparing discriminant 
-power of the features obtained from different spectral bands. 
-Although the CSP features within each band are sorted based on 
-their discriminant power, it is not possible to sort the features
-across different bands.
+- The features are extracted based on joint
+analysis of both spatial and spectral characteristics of the signal.
+
+- A measure is provided to rank the discriminatory power of 
+extracted spatio-spectral features, which enables us to directly 
+perform dimensionality reduction without any need to deploy 
+a separate subsequent feature extraction/selection module.

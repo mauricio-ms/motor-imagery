@@ -11,12 +11,12 @@ class MIBIFFeatureSelection:
 
     Attributes
     ----------
-    feature_extraction : FeatureExtraction
-        The feature_extraction parameter received
     k : int
         The best k features selected
-    features : (k x feature_extraction.n_features)-d array
-        The array with the selected features
+    training_features : (k x features.training_features.n_features)-d array
+        The array with the selected training features
+    test_features : (k x features.test_features.n_features)-d array
+        The array with the selected test features
     """
     def __init__(self, features, k=4, scale=True):
         """

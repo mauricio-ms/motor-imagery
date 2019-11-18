@@ -2,12 +2,12 @@
 Implementation mainly based on the paper:
     Filter bank common spatial pattern algorithm on BCI competition IV Datasets 2a and 2b
 """
-from data_preparation import read_eeg_file
-from FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
-from MIBIFFeatureSelection import MIBIFFeatureSelection
-from Svm import Svm
-from Lda import Lda
-from evaluation import plot_accuracies_by_subjects, print_mean_accuracies
+from models.data_preparation.data_preparation import read_eeg_file
+from models.fbcsp.FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
+from models.fbcsp.MIBIFFeatureSelection import MIBIFFeatureSelection
+from models.classifiers.SVM import SVM
+from models.classifiers.LDA import LDA
+from models.evaluation.evaluation import plot_accuracies_by_subjects, print_mean_accuracies
 
 import numpy as np
 
@@ -54,14 +54,14 @@ for subject in subjects:
     accuracy_index = subject - 1
 
     # SVM classifier
-    svm_accuracy = Svm("rbf", 0.8, not scale,
+    svm_accuracy = SVM("rbf", 0.8, not scale,
                        selected_training_features, features.training_labels,
                        selected_test_features, features.test_labels).get_accuracy()
     print(f"SVM accuracy: {svm_accuracy:.4f}")
     accuracies["SVM"][accuracy_index] = svm_accuracy
 
     # LDA classifier
-    lda_accuracy = Lda(selected_training_features, features.training_labels,
+    lda_accuracy = LDA(selected_training_features, features.training_labels,
                        selected_test_features, features.test_labels).get_accuracy()
     print(f"LDA accuracy: {lda_accuracy:.4f}")
     accuracies["LDA"][accuracy_index] = lda_accuracy

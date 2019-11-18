@@ -4,8 +4,7 @@ from sklearn.metrics import accuracy_score
 import numpy as np
 
 
-class Lda:
-    # TODO Adjust the features as a object
+class LDA:
     def __init__(self, training_features, y_training, test_features, y_test, threshold=None):
         self.training_features = training_features
         self.y_training = y_training

@@ -1,5 +1,5 @@
 from main import ROOT_DIR
-from EEG import EEG
+from models.data_preparation.EEG import EEG
 
 import numpy as np
 import pandas as pd
@@ -27,22 +27,22 @@ def read_eeg_file(left_data_file, right_data_file, time_length, time_window, epo
 
 def __read_eeg_file(left_data_file, right_data_file, time_length, time_window, epoch_size=None):
     # Read the data
-    left_data = __extract_single_trial(__load_csv(left_data_file), time_length, time_window)
-    right_data = __extract_single_trial(__load_csv(right_data_file), time_length, time_window)
+    left_data = extract_single_trial(load_csv(left_data_file), time_length, time_window)
+    right_data = extract_single_trial(load_csv(right_data_file), time_length, time_window)
 
     # Read the epoch data
     if epoch_size is not None:
-        left_data = __epoch(left_data, epoch_size)
-        right_data = __epoch(right_data, epoch_size)
+        left_data = epoch(left_data, epoch_size)
+        right_data = epoch(right_data, epoch_size)
 
     return left_data, right_data
 
 
-def __load_csv(file_path):
+def load_csv(file_path):
     return pd.read_csv(ROOT_DIR + "/" + file_path, header=None)
 
 
-def __epoch(eeg, size):
+def epoch(eeg, size):
     data = None
     for trial in eeg:
         single_epoch = __window_apply(pd.DataFrame(trial), __identity, size, size//2)
@@ -54,7 +54,7 @@ def __epoch(eeg, size):
     return data
 
 
-def __extract_single_trial(eeg, trial_length, trial_length_to_extract=None):
+def extract_single_trial(eeg, trial_length, trial_length_to_extract=None):
     if trial_length_to_extract is None:
         trial_length_to_extract = trial_length
     return __window_apply(eeg, __identity, trial_length_to_extract, trial_length)

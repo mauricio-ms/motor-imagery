@@ -1,8 +1,8 @@
-from data_preparation import read_eeg_file
-from FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
-from MIBIFFeatureSelection import MIBIFFeatureSelection
-from Svm import Svm
-from Lda import Lda
+from models.data_preparation.data_preparation import read_eeg_file
+from models.fbcsp.FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
+from models.fbcsp.MIBIFFeatureSelection import MIBIFFeatureSelection
+from models.classifiers.SVM import SVM
+from models.classifiers.LDA import LDA
 
 
 TIME_LENGTH = 750
@@ -28,12 +28,12 @@ test_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WIN
 features = FilterBankCSPFeatureExtraction(training_data, test_data)
 
 # SVM classifier
-svm_accuracy = Svm("linear", 0.8, True,
+svm_accuracy = SVM("linear", 0.8, True,
                    features.training_features, features.training_labels,
                    features.test_features, features.test_labels).get_accuracy()
 print("SVM accuracy:", svm_accuracy)
 
 # LDA classifier
-lda_accuracy = Lda(features.training_features, features.training_labels,
+lda_accuracy = LDA(features.training_features, features.training_labels,
                    features.test_features, features.test_labels).get_accuracy()
 print("LDA accuracy:", lda_accuracy)
