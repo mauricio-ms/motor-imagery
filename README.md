@@ -80,6 +80,25 @@ a single classification rate. The execution time is estimated
 by summing up the expended time during spatial
 filtering (training) and classification (testing).
 
+This validation procedure mixes the dataset randomly and divides
+into ten equally sized distinct partitions. Each partition is then
+used for testing, while other partitions are used for training the
+model. This results in ten different error rates or accuracy, which
+are averaged. This is the error of tenfold cross validation. To
+further improve the estimate, the procedure is repeated ten times
+and all error rates over these ten runs are again averaged [3].
+The average accuracy or error rate over ten runs obtained for the
+test data is taken as the performance evaluation criteria, which
+is named as validation accuracy or validation error rate of one
+subject.
+
+- Average Power Spectral Density Plot:
+The average power spectral density of two-class
+EEG signals by frequencies can be generated to
+analyse if the band selection algorithm is working
+appropriately, the bands with good discrimination
+should have different values 
+
 # BCI
 - The MobileSim is a software that can be used as a robot simulator, the article 11 used this approach.
 - Uma abordagem legal seria conectar a BCI para jogar o jogo do dinossauro do Google Chrome.
