@@ -11,7 +11,6 @@ from models.evaluation.evaluation import plot_accuracies_by_subjects, print_mean
 
 import numpy as np
 
-# TODO VERIFICAR SE É NECESSÁRIO EXTRAIR AS CARACTERÍSITCAS ANTES DA SELEÇÃO DAS BANDAS
 TIME_LENGTH = 750
 TIME_WINDOW = 750
 EPOCH_SIZE = 500

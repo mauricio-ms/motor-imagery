@@ -1,5 +1,10 @@
 ## Motor Imagery
-Project to test the accuracy of multiple algorithms published in articles to the EEG binary motor imagery problem
+Project to test the accuracy of multiple algorithms published in articles to the EEG binary motor imagery problem.
+
+The motor imagery (MI) based BCI is capable of translating the Subject’s movement intention 
+to controls the external devices. Imagining a movement or performing an action mentally is
+known as MI. In MI tasks, subjects are instructed to imagine themselves performing a specific
+motor action (e.g. hand, foot) without overt motor output and each task is treated as a MI class.
 
 # Dataset
 - BCI Competition IV dataset 2b.
@@ -51,16 +56,21 @@ instead of maximum information in terms of Kullback-Leibler (KL) divergence meas
 - The classifiers based on deep neural networks have been used in MI BCI
 research to improve the accuracy of multi-class signal analysis.
 
-- Regularized Fisher LDA [27], an enhancement of LDA has also been used for right and left-hand
+- Regularized Fisher LDA, an enhancement of LDA has also been used for right and left-hand
 motor imagery that uses decision boundary or hyperplane in feature
 space for classifying features in distinct classes. Fisher LDA obtains better
-generalization capabilities and gives better results than LDA [65].
+generalization capabilities and gives better results than LDA.
 
 - Logarithmic band power (LBP) rather than variance. (Article 10)
 
 # Evaluation
+- Accuracy:
+The accuracy of a measurement system is the degree of closeness
+of measurements of a quantity to its actual (true) value.
+
 - Kappa:
-Defined as the proportion of correctly classified samples after accounting for the probability of chance agreement:
+Defined as the proportion of correctly classified samples 
+after accounting for the probability of chance agreement:
 
 Kappa = (Pr(A) - Pr(E)) / (1 - Pr(E))
 
@@ -100,8 +110,23 @@ appropriately, the bands with good discrimination
 should have different values 
 
 # BCI
+> BCI can be designed in two ways: 
+- Subject-dependent (SD) based BCI and Subject-independent based BCI. 
+In the SD based BCI, the training part in the MI classification requires 
+a significant number of EEG signal features for recognizing MI patterns 
+of a specific subject  with an acceptable performance.
+The SD based BCI system requires long recording sessions and afterwards 
+several training sessions for the Subject to be able to use the system.
+- In the SI based BCI, the systems are trained with the data of a group 
+of subjects instead of a single subject.
+
 - The MobileSim is a software that can be used as a robot simulator, the article 11 used this approach.
 - Uma abordagem legal seria conectar a BCI para jogar o jogo do dinossauro do Google Chrome.
+- Since motor-imagery BCI systems are mostly designed for
+long-term utilization by the user, it is usually assumed that
+the BCI algorithm has access to a training dataset with long
+enough trials, which are collected over at least two different
+recording sessions.
 
 # Possible next implementations
 - Article 10
