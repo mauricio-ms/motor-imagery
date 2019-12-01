@@ -6,10 +6,6 @@ to controls the external devices. Imagining a movement or performing an action m
 known as MI. In MI tasks, subjects are instructed to imagine themselves performing a specific
 motor action (e.g. hand, foot) without overt motor output and each task is treated as a MI class.
 
-# Dataset
-- BCI Competition IV dataset 2b.
-- Data of 120 repetitions of each MI class were available for each person in total.
-
 # Pre-processing
 A frequency band of 0.5 - 100 Hz is most commonly used during EEG
 recording to obtain a wide frequency spectrum for further

@@ -2,13 +2,13 @@
 Implementation mainly based on the paper:
     Separable Common Spatio-Spectral Patterns for Motor Imagery BCI Systems
 """
-from models.data_preparation.data_preparation import read_eeg_file
-from models.signal_processing.FilterBank import FilterBank
-from models.scssp.SpatioSpectralCovariancesEstimation import SpatioSpectralCovariancesEstimation
-from models.scssp.EigenvaluesProblems import EigenvaluesProblems
-from models.classifiers.SVM import SVM
-from models.classifiers.LDA import LDA
-from models.evaluation.evaluation import plot_accuracies_by_subjects, print_mean_accuracies
+from src.data_preparation.data_preparation import read_eeg_file
+from src.signal_processing.FilterBank import FilterBank
+from src.algorithms.scssp.SpatioSpectralCovariancesEstimation import SpatioSpectralCovariancesEstimation
+from src.algorithms.scssp.EigenvaluesProblems import EigenvaluesProblems
+from src.classifiers.SVM import SVM
+from src.classifiers.LDA import LDA
+from src.evaluation.evaluation import plot_accuracies_by_subjects, print_mean_accuracies
 
 import numpy as np
 

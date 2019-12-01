@@ -2,12 +2,12 @@
 Implementation mainly based on the paper:
     Filter bank common spatial pattern algorithm on BCI competition IV Datasets 2a and 2b
 """
-from models.data_preparation.data_preparation import read_eeg_file
-from models.fbcsp.FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
-from models.fbcsp.MIBIFFeatureSelection import MIBIFFeatureSelection
-from models.classifiers.SVM import SVM
-from models.classifiers.LDA import LDA
-from models.evaluation.evaluation import plot_accuracies_by_subjects, print_mean_accuracies
+from src.data_preparation.data_preparation import read_eeg_file
+from src.algorithms.fbcsp.FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
+from src.algorithms.fbcsp.MIBIFFeatureSelection import MIBIFFeatureSelection
+from src.classifiers.SVM import SVM
+from src.classifiers.LDA import LDA
+from src.evaluation.evaluation import plot_accuracies_by_subjects, print_mean_accuracies
 
 import numpy as np
 

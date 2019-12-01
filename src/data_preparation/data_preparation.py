@@ -1,5 +1,5 @@
 from main import ROOT_DIR
-from models.data_preparation.EEG import EEG
+from src.data_preparation.EEG import EEG
 
 import numpy as np
 import pandas as pd

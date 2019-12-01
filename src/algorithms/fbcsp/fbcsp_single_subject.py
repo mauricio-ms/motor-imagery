@@ -1,8 +1,7 @@
-from models.data_preparation.data_preparation import read_eeg_file
-from models.fbcsp.FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
-from models.fbcsp.MIBIFFeatureSelection import MIBIFFeatureSelection
-from models.classifiers.SVM import SVM
-from models.classifiers.LDA import LDA
+from src.data_preparation.data_preparation import read_eeg_file
+from src.algorithms.fbcsp.FilterBankCSPFeatureExtraction import FilterBankCSPFeatureExtraction
+from src.classifiers.SVM import SVM
+from src.classifiers.LDA import LDA
 
 
 TIME_LENGTH = 750
@@ -10,18 +9,18 @@ TIME_WINDOW = 750
 EPOCH_SIZE = None
 CSP_RELEVANT_FEATURES = 2
 
-subject = 3
+subject = 4
 
 # Load training data
 print("Loading training data ...")
-left_data_file = f"data/bnci/by-subject-complete/lefthand-training-subject-{subject}.csv"
-right_data_file = f"data/bnci/by-subject-complete/righthand-training-subject-{subject}.csv"
+left_data_file = f"data/bnci/by-subject-data-with-feedback-to-user/lefthand-training-subject-{subject}.csv"
+right_data_file = f"data/bnci/by-subject-data-with-feedback-to-user/righthand-training-subject-{subject}.csv"
 training_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, EPOCH_SIZE)
 
 # Load test data
 print("Loading test data ...")
-left_data_file = f"data/bnci/by-subject-complete/lefthand-test-subject-{subject}.csv"
-right_data_file = f"data/bnci/by-subject-complete/righthand-test-subject-{subject}.csv"
+left_data_file = f"data/bnci/by-subject-data-with-feedback-to-user/lefthand-test-subject-{subject}.csv"
+right_data_file = f"data/bnci/by-subject-data-with-feedback-to-user/righthand-test-subject-{subject}.csv"
 test_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, EPOCH_SIZE, False)
 
 # Feature extraction

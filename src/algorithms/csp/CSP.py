@@ -1,7 +1,7 @@
 import numpy as np
 from scipy import linalg
-from models.utils.array_helper import select_cols
-from models.feature_extraction.feature_extraction_functions import log_variance
+from src.utils.array_helper import select_cols
+from src.feature_extraction.feature_extraction_functions import log_variance
 
 
 class CSP:

@@ -1,5 +1,9 @@
 The method was proposed in the article: Separable Common Spatio-Spectral Patterns for Motor Imagery BCI Systems
 
+# Dataset
+- Data of 120 repetitions of each MI class were available for each person in total.
+- http://bnci-horizon-2020.eu/database/data-sets (4. Two class motor imagery (004-2014))
+
 # Advantages compared to the FBCSP method
 - Has significantly less computational cost for training since it requires
 training of only two CSP-type modules instead of Nf modules in FBCSP.

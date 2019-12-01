@@ -1,4 +1,4 @@
-from models.scssp.SpatioSpectralCovariances import SpatioSpectralCovariances
+from src.algorithms.scssp.SpatioSpectralCovariances import SpatioSpectralCovariances
 import numpy as np
 
 

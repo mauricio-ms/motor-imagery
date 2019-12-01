@@ -1,4 +1,4 @@
-from models.utils.array_helper import flat
+from src.utils.array_helper import flat
 from scipy import linalg
 
 import numpy as np

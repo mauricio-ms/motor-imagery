@@ -1,3 +1,7 @@
+# Dataset
+- Data of 120 repetitions of each MI class were available for each person in total.
+- http://bnci-horizon-2020.eu/database/data-sets (4. Two class motor imagery (004-2014))
+
 # Drawbacks
 - FBCSP has a high computational cost at the training phase since
 it requires a separate feature extractor for each spectral band,
