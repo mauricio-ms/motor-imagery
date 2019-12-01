@@ -106,7 +106,15 @@ appropriately, the bands with good discrimination
 should have different values 
 
 # BCI
-> BCI can be designed in two ways: 
+- The MobileSim is a software that can be used as a robot simulator, the article 11 used this approach.
+- Uma abordagem legal seria conectar a BCI para jogar o jogo do dinossauro do Google Chrome.
+- Since motor-imagery BCI systems are mostly designed for
+long-term utilization by the user, it is usually assumed that
+the BCI algorithm has access to a training dataset with long
+enough trials, which are collected over at least two different
+recording sessions.
+
+## BCI can be designed in two ways: 
 - Subject-dependent (SD) based BCI and Subject-independent based BCI. 
 In the SD based BCI, the training part in the MI classification requires 
 a significant number of EEG signal features for recognizing MI patterns 
@@ -115,14 +123,6 @@ The SD based BCI system requires long recording sessions and afterwards
 several training sessions for the Subject to be able to use the system.
 - In the SI based BCI, the systems are trained with the data of a group 
 of subjects instead of a single subject.
-
-- The MobileSim is a software that can be used as a robot simulator, the article 11 used this approach.
-- Uma abordagem legal seria conectar a BCI para jogar o jogo do dinossauro do Google Chrome.
-- Since motor-imagery BCI systems are mostly designed for
-long-term utilization by the user, it is usually assumed that
-the BCI algorithm has access to a training dataset with long
-enough trials, which are collected over at least two different
-recording sessions.
 
 # Possible next implementations
 - Article 10
