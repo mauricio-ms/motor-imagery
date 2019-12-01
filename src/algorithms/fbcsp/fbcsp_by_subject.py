@@ -15,8 +15,10 @@ TIME_LENGTH = 750
 TIME_WINDOW = 750
 EPOCH_SIZE = 500
 CSP_RELEVANT_FEATURES = 2
+# DATA_FOLDER = "data/bnci/by-subject-data-with-feedback-to-user"
+DATA_FOLDER = "data/bci-iv-a/subject-dependent"
 
-subjects = range(1, 10)
+subjects = range(1, 6)
 accuracies = {
     "SVM": np.zeros(len(subjects)),
     "LDA": np.zeros(len(subjects))
@@ -27,14 +29,14 @@ for subject in subjects:
 
     # Load training data
     print("Loading training data ...")
-    left_data_file = f"data/bnci/by-subject-data-with-feedback-to-user/lefthand-training-subject-{subject}.csv"
-    right_data_file = f"data/bnci/by-subject-data-with-feedback-to-user/righthand-training-subject-{subject}.csv"
+    left_data_file = f"{DATA_FOLDER}/left-hand-training-subject-{subject}.csv"
+    right_data_file = f"{DATA_FOLDER}/right-hand-training-subject-{subject}.csv"
     training_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, EPOCH_SIZE)
 
     # Load test data
     print("Loading test data ...")
-    left_data_file = f"data/bnci/by-subject-data-with-feedback-to-user/lefthand-test-subject-{subject}.csv"
-    right_data_file = f"data/bnci/by-subject-data-with-feedback-to-user/righthand-test-subject-{subject}.csv"
+    left_data_file = f"{DATA_FOLDER}/left-hand-test-subject-{subject}.csv"
+    right_data_file = f"{DATA_FOLDER}/right-hand-test-subject-{subject}.csv"
     test_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, EPOCH_SIZE, False)
 
     # Feature extraction
