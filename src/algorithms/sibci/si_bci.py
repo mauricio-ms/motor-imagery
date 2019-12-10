@@ -64,7 +64,7 @@ for test_subject in subjects:
     # Pre-processing
     print("Pre-processing ...")
     print("Applying 5º order Butterworth bandpass filter (8-30 Hz)")
-    b, a = signal.butter(5, [8, 30], btype="bandpass", fs=100GIT)
+    b, a = signal.butter(5, [8, 30], btype="bandpass", fs=100)
 
     training_data.left_data = signal.filtfilt(b, a, training_data.left_data, axis=1)
     training_data.right_data = signal.filtfilt(b, a, training_data.right_data, axis=1)
