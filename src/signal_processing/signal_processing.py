@@ -18,7 +18,7 @@ def filter_in_all_frequency_bands(trial):
         high_freq = LOW_FREQS[n_low_freq+1]
 
         # Create a 5 order Chebyshev Type 2 filter to the specific band (low_freq - high_freq)
-        b, a = signal.cheby2(5, 0.5, [low_freq, high_freq], btype="bandpass", fs=250)
+        b, a = signal.cheby2(5, 0.5, [low_freq, high_freq], btype="bandpass", fs=100)
 
         filtered_signals[n_low_freq, :, :] = signal.filtfilt(b, a, trial, axis=0)
 
@@ -42,3 +42,21 @@ def apply_bandpass_filter(eeg):
 def bandpass_filter(eeg_signal):
     b, a = signal.butter(4, [8, 30], btype="bandpass", fs=250)
     return signal.filtfilt(b, a, eeg_signal, axis=1)
+
+
+def cross_correlation(x, y, m):
+    """
+    Parameters
+    ----------
+    x: time-samples array
+        Signal x
+    y: time-samples array
+        Signal y
+    m: int
+        The lag parameter
+
+    Returns
+    -------
+    The cross-correlation between the signals x and y
+    """
+    return [x[i]*y[i-m] for i in range(m, len(x))]
