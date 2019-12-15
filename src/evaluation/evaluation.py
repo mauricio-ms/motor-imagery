@@ -12,11 +12,12 @@ def print_mean_accuracies(accuracies):
 
 def plot_accuracies_by_subjects(subjects, accuracies):
     x = np.arange(len(subjects))
-    bar_width = .35
+    bar_width = .30
 
     fig, ax = plt.subplots()
     for (i, classifier) in enumerate(accuracies.keys()):
-        position = x - bar_width / 2 if i % 2 == 0 else x + bar_width / 2
+        i = i + 1
+        position = x if i % 3 == 0 else x - bar_width * i
         ax.bar(position, accuracies[classifier], bar_width, label=classifier)
 
     ax.set_ylabel("Accuracy")
