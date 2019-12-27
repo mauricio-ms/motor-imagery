@@ -3,7 +3,7 @@ import numpy as np
 
 def log_variance(x, w):
     z = np.dot(x, w)
-    return np.log(np.var(z, axis=0))
+    return np.log(np.divide(np.var(z, axis=0), np.sum(np.var(z, axis=0))))
 
 
 def log_band_power(x, w):
