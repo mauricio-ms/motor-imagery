@@ -1,21 +1,72 @@
-"""
-Implementation mainly based on the paper:
-    A New Design of Mental State Classification for Subject Independent BCI Systems
-"""
 from src.data_preparation.data_preparation import read_eeg_file, read_eeg_files
 from scipy import signal
-# from src.algorithms.csp.CSP import CSP
-from mne.decoding import CSP
-from src.classifiers.SVM import SVM
-from src.classifiers.LDA import LDA
-from src.evaluation.evaluation import plot_accuracies_by_subjects, print_mean_accuracies
-import matplotlib.pyplot as plt
-
+from scipy import linalg
+from sklearn.model_selection import StratifiedKFold
+from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
+from sklearn.metrics import accuracy_score
+import pyriemann.utils.mean as rie_mean
 import numpy as np
 
 
+def compute_spatial_filters(left_data, right_data):
+    n_channels = left_data.shape[2]
+    cov_shape = (n_channels, n_channels)
+
+    # Estimate the covariance matrix of every trial
+    n_left_trials = left_data.shape[0]
+    cov = np.zeros((n_left_trials, *cov_shape))
+    for n_trial in range(n_left_trials):
+        trial = signal.sosfilt(sos, left_data[n_trial], axis=0)
+        cov[n_trial] = np.cov(np.transpose(trial))
+
+    # calculate average of covariance matrix
+    cov_1 = rie_mean.mean_covariance(cov, metric="riemann")
+
+    # Estimate the covariance matrix of every trial
+    n_right_trials = right_data.shape[0]
+    cov = np.zeros((n_right_trials, *cov_shape))
+    for n_trial in range(n_right_trials):
+        trial = signal.sosfilt(sos, right_data[n_trial], axis=0)
+        cov[n_trial] = np.cov(np.transpose(trial))
+
+    # calculate average of covariance matrix
+    cov_2 = rie_mean.mean_covariance(cov, metric="riemann")
+
+    # Solve the generalized eigenvalue problem
+    n_pairs = CSP_COMPONENTS // 2
+    w, vr = linalg.eig(cov_1, cov_2, right=True)
+    w = np.abs(w)
+    sorted_indexes = np.argsort(w)
+    chosen_indexes = np.zeros(2 * n_pairs).astype(int)
+    chosen_indexes[0:n_pairs] = sorted_indexes[0:n_pairs]
+    chosen_indexes[n_pairs:2 * n_pairs] = sorted_indexes[-n_pairs:]
+
+    return vr[:, chosen_indexes]
+
+
+def extract_features(left_data, right_data):
+    X = np.concatenate((left_data, right_data))
+    W = compute_spatial_filters(left_data, right_data)
+
+    n_trials = X.shape[0]
+    features = {
+        "CSP": np.zeros((n_trials, CSP_COMPONENTS)),
+        "KATZ_FRACTAL": np.zeros((n_trials, CSP_COMPONENTS))
+    }
+
+    for n_trial in range(n_trials):
+        x = X[n_trial]
+        x = signal.sosfilt(sos, x, axis=0)
+        z = np.dot(np.transpose(W), np.transpose(x))
+        #z = signal.sosfilt(sos, z, axis=1)
+        features["CSP"][n_trial] = np.log(np.divide(np.var(z, axis=1), np.sum(np.var(z, axis=1))))
+        for n_component in range(CSP_COMPONENTS):
+            features["KATZ_FRACTAL"][n_trial, n_component] = katz_fd(z[n_component])
+
+    return features
+
+
 def katz_fd(x):
-    x = np.array(x)
     dists = np.abs(np.ediff1d(x))
     ll = dists.sum()
     ln = np.log10(np.divide(ll, dists.mean()))
@@ -24,132 +75,75 @@ def katz_fd(x):
     return np.divide(ln, np.add(ln, np.log10(np.divide(d, ll))))
 
 
+def classify(X_train, Y_train, X_test, Y_test):
+    lda = LinearDiscriminantAnalysis()
+    lda.fit(X_train, Y_train)
+    predictions = lda.predict(X_test)
+    return accuracy_score(Y_test, predictions)
+
+
+FS = 100
 TIME_LENGTH = 250
 TIME_WINDOW = 250
-EPOCH_SIZE = None
-DATA_FOLDER = "data/bci-iv-a/subject-independent/100hz"
-CSP_COMPONENTS = 4
+DATA_FOLDER = "data/si-bci/bci-iii-dataset-iv-a"
+CSP_COMPONENTS = 8
+K_FOLD = 10
 
 subjects = range(1, 6)
 subjects_set = set(subjects)
 accuracies = {
-    "SVM": np.zeros(len(subjects)),
-    "LDA": np.zeros(len(subjects))
+    "CSP": np.zeros(len(subjects)),
+    "KATZ_FRACTAL": np.zeros(len(subjects))
 }
 
+sos = signal.butter(5, [8, 30], analog=False, btype="band", output="sos", fs=FS)
+
 for test_subject in subjects:
-    print("Test subject: ", test_subject)
-    training_subjects = list(subjects_set - {test_subject})
-    print("Training subjects: ", training_subjects)
+    print("Subject: ", test_subject)
+    train_subjects = list(subjects_set - {test_subject})
 
     # Load training data
-    print("Loading training data ...")
-    path_files = [(f"{DATA_FOLDER}/left-hand-subject-{training_subject}.csv",
-                   f"{DATA_FOLDER}/right-hand-subject-{training_subject}.csv")
-                  for training_subject in training_subjects]
-    training_data = read_eeg_files(path_files, TIME_LENGTH, TIME_WINDOW, EPOCH_SIZE)
-
-    print(f"Left trials: {training_data.left_data.shape[0]}")
-    print(f"Right trials: {training_data.right_data.shape[0]}")
+    path_files = [(f"{DATA_FOLDER}/left-hand-subject-{train_subject}.csv",
+                   f"{DATA_FOLDER}/right-hand-subject-{train_subject}.csv")
+                  for train_subject in train_subjects]
+    train_data = read_eeg_files(path_files, TIME_LENGTH, TIME_WINDOW)
 
     # Load test data
-    print("Loading test data ...")
     left_data_file = f"{DATA_FOLDER}/left-hand-subject-{test_subject}.csv"
     right_data_file = f"{DATA_FOLDER}/right-hand-subject-{test_subject}.csv"
-    test_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, EPOCH_SIZE, False)
-
-    print(f"Left trials: {test_data.left_data.shape[0]}")
-    print(f"Right trials: {test_data.right_data.shape[0]}")
-
-    # Pre-processing
-    print("Pre-processing ...")
-    print("Applying 5º order Butterworth bandpass filter (8-30 Hz)")
-    b, a = signal.butter(5, [8, 30], btype="bandpass", fs=100)
-
-    training_data.left_data = signal.filtfilt(b, a, training_data.left_data, axis=1)
-    training_data.right_data = signal.filtfilt(b, a, training_data.right_data, axis=1)
-
-    # plt.plot(training_data.left_data[1, :, 1])
-    # plt.show()
-
-    test_data.left_data = signal.filtfilt(b, a, test_data.left_data, axis=1)
-    test_data.right_data = signal.filtfilt(b, a, test_data.right_data, axis=1)
-
-    training_data.X = np.concatenate((training_data.left_data, training_data.right_data))
+    test_data = read_eeg_file(left_data_file, right_data_file, TIME_LENGTH, TIME_WINDOW, training=False)
     test_data.X = np.concatenate((test_data.left_data, test_data.right_data))
 
-    # Reshape to the format expected by MNE Library
-    X = np.transpose(training_data.X, [0, 2, 1])
-    csp = CSP(n_components=CSP_COMPONENTS, reg=None, log=None, norm_trace=False, transform_into="csp_space")
-    csp.fit(X, training_data.labels)
-    training_data.Z = np.transpose(csp.transform(X), [0, 2, 1])
+    train_data.F = extract_features(train_data.left_data, train_data.right_data)
 
-    # csp = CSP(average_trial_covariance=False, n_components=CSP_COMPONENTS)
-    # csp.fit(training_data.left_data, training_data.right_data)
-    # training_data.Z = np.array([csp.project(x) for x in training_data.X])
-
-    # Feature extraction
-    print("Extracting features ...")
-    training_data.csp_log_var_features = np.zeros((training_data.Z.shape[0], CSP_COMPONENTS))
-    training_data.katz_fractal_features = np.zeros((training_data.Z.shape[0], CSP_COMPONENTS))
-    for n_epoch in range(0, training_data.Z.shape[0]):
-        trial = training_data.Z[n_epoch, :, :]
-        training_data.csp_log_var_features[n_epoch, :] = np.log(np.var(trial, axis=0)/np.sum(np.var(trial, axis=0)))
-        for n_channel in range(0, trial.shape[1]):
-            training_data.katz_fractal_features[n_epoch, n_channel] = katz_fd(trial[:, n_channel])
-
-    # training_data.features = np.concatenate((training_data.csp_log_var_features, training_data.katz_fractal_features), axis=1)
-    # training_data.features = training_data.katz_fractal_features
-    training_data.features = training_data.csp_log_var_features
-
-    # csp = CSP(average_trial_covariance=False, n_components=CSP_COMPONENTS)
-    # csp.fit(test_data.left_data, test_data.right_data)
-    #
-    # test_data.Z = np.array([csp.project(x) for x in test_data.X])
-
-    X = np.transpose(test_data.X, [0, 2, 1])
-    # csp = CSP(n_components=CSP_COMPONENTS, reg=None, log=None, norm_trace=False, transform_into="csp_space")
-    # csp.fit(X, test_data.labels)
-    test_data.Z = np.transpose(csp.transform(X), [0, 2, 1])
-
-    test_data.csp_log_var_features = np.zeros((test_data.Z.shape[0], CSP_COMPONENTS))
-    test_data.katz_fractal_features = np.zeros((test_data.Z.shape[0], CSP_COMPONENTS))
-    for n_epoch in range(0, test_data.Z.shape[0]):
-        trial = test_data.Z[n_epoch, :, :]
-        test_data.csp_log_var_features[n_epoch, :] = np.log(np.var(trial, axis=0)/np.sum(np.var(trial, axis=0)))
-        for n_channel in range(0, trial.shape[1]):
-            test_data.katz_fractal_features[n_epoch, n_channel] = katz_fd(trial[:, n_channel])
-
-    # test_data.features = np.concatenate((test_data.csp_log_var_features, test_data.katz_fractal_features), axis=1)
-    # test_data.features = test_data.katz_fractal_features
-    test_data.features = test_data.csp_log_var_features
-
-    # Classification
-    print("Classifying features ...")
     accuracy_index = test_subject - 1
+    fold_accuracies = {
+        "CSP": np.zeros(K_FOLD),
+        "KATZ_FRACTAL": np.zeros(K_FOLD)
+    }
+    cv = StratifiedKFold(n_splits=K_FOLD, shuffle=True)
+    for (k, (validation_index, test_index)) in enumerate(cv.split(test_data.X, test_data.labels)):
+        X_test = test_data.X[validation_index]
+        Y_test = test_data.labels[validation_index]
+        test_data.F = extract_features(X_test[Y_test == 0], X_test[Y_test == 1])
 
-    # SVM classifier
-    svm_accuracy = SVM("rbf", 0.8, True,
-                       training_data.features, training_data.labels,
-                       test_data.features, test_data.labels).get_accuracy()
-    print(f"SVM accuracy: {svm_accuracy:.4f}")
-    accuracies["SVM"][accuracy_index] = svm_accuracy
+        fold_accuracies["CSP"][k] = classify(train_data.F["CSP"], train_data.labels,
+                                             test_data.F["CSP"], Y_test)
+        acc = classify(train_data.F["KATZ_FRACTAL"], train_data.labels,
+                       test_data.F["KATZ_FRACTAL"], Y_test)
+        print(acc)
+        fold_accuracies["KATZ_FRACTAL"][k] = acc
 
-    # LDA classifier
-    lda_accuracy = LDA(training_data.features, training_data.labels,
-                       test_data.features, test_data.labels).get_accuracy()
-    print(f"LDA accuracy: {lda_accuracy:.4f}")
-    accuracies["LDA"][accuracy_index] = lda_accuracy
-
-    print()
-
-# TODO TO CROSS-VALIDATE ROTATE THE TEST DATA
+    accuracies["CSP"][accuracy_index] = np.mean(fold_accuracies["CSP"])
+    accuracies["KATZ_FRACTAL"][accuracy_index] = np.mean(fold_accuracies["KATZ_FRACTAL"])
 
 # Evaluation
-plot_accuracies_by_subjects(subjects, accuracies)
-print_mean_accuracies(accuracies)
-
-for algorithm in accuracies.keys():
-    print(algorithm)
-    for accuracy in accuracies.get(algorithm):
-        print(accuracy)
+for feature_extraction_method in accuracies:
+    print(feature_extraction_method)
+    for subject, cv_accuracies in enumerate(accuracies[feature_extraction_method]):
+        acc_mean = np.mean(cv_accuracies) * 100
+        acc_std = np.std(cv_accuracies) * 100
+        print(f"\tSubject {subject + 1} average accuracy: {acc_mean:.4f} +/- {acc_std:.4f}")
+    average_acc_mean = np.mean(accuracies[feature_extraction_method]) * 100
+    average_acc_std = np.std(accuracies[feature_extraction_method]) * 100
+    print(f"\tAverage accuracy: {average_acc_mean:.4f} +/- {average_acc_std:.4f}\n")
