@@ -23,7 +23,7 @@ plt.scatter(class_2[:, 0], class_2[:, 1], c="b")
 plt.title("Before CSP filtering")
 plt.show()
 
-# Compute the csp params
+# Compute the csp2 params
 s1 = np.cov(class_1.T)
 s2 = np.cov(class_2.T)
 

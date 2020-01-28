@@ -76,7 +76,7 @@ A κ value might range between 1 and −1, which corresponds to a perfect and a 
 classification, respectively. On the other hand, a κ with value 0 indicates that the performance is equal to a
 random guess.
 
-- 10-fold cross validation:
+- 10x10-fold cross validation:
 In this cross validation technique, the dataset
 is randomly divided into 10 equal subsets where one of
 the subsets is used for the test while rests 9 are used to
@@ -108,6 +108,7 @@ should have different values
 # BCI
 - The MobileSim is a software that can be used as a robot simulator, the article 11 used this approach.
 - Uma abordagem legal seria conectar a BCI para jogar o jogo do dinossauro do Google Chrome.
+Neste caso -> The calibration can be implemented as a coadaptive procedure during the application.
 - Since motor-imagery BCI systems are mostly designed for
 long-term utilization by the user, it is usually assumed that
 the BCI algorithm has access to a training dataset with long

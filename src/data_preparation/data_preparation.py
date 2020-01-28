@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 
 
-def read_eeg_files(path_files, time_length, time_window, epoch_size=None, training=True):
+def read_eeg_files(path_files, time_length=None, time_window=None, epoch_size=None, training=True):
     left_data = None
     right_data = None
     for left_data_file, right_data_file in path_files:
@@ -21,14 +21,18 @@ def read_eeg_files(path_files, time_length, time_window, epoch_size=None, traini
     return EEG(left_data, right_data, training)
 
 
-def read_eeg_file(left_data_file, right_data_file, time_length, time_window, epoch_size=None, training=True):
+def read_eeg_file(left_data_file, right_data_file, time_length=None, time_window=None, epoch_size=None, training=True):
     return EEG(*(__read_eeg_file(left_data_file, right_data_file, time_length, time_window, epoch_size)), training)
 
 
-def __read_eeg_file(left_data_file, right_data_file, time_length, time_window, epoch_size=None):
+def __read_eeg_file(left_data_file, right_data_file, time_length=None, time_window=None, epoch_size=None):
     # Read the eeg data
-    left_data = extract_single_trial(load_csv(left_data_file), time_length, time_window)
-    right_data = extract_single_trial(load_csv(right_data_file), time_length, time_window)
+    left_data = load_csv(left_data_file)
+    right_data = load_csv(right_data_file)
+
+    if time_length is not None and time_window is not None:
+        left_data = extract_single_trial(left_data, time_length, time_window)
+        right_data = extract_single_trial(right_data, time_length, time_window)
 
     # Epoch the data
     if epoch_size is not None:
