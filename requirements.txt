@@ -1,3 +1,4 @@
+pywt
 matplotlib
 scikit-learn
 mne

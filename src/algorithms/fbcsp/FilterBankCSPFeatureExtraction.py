@@ -8,6 +8,7 @@ class FilterBankCSPFeatureExtraction:
     """
     Class responsible to extract the features based on the raw EEG data
     using the algorithm filter bank CSP
+
     Attributes
     ----------
     n_components : int

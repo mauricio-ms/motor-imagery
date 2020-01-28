@@ -15,8 +15,8 @@ TIME_LENGTH = 750
 TIME_WINDOW = 750
 EPOCH_SIZE = 500
 CSP_RELEVANT_FEATURES = 2
-# DATA_FOLDER = "data/bnci/by-subject-data-with-feedback-to-user"
-DATA_FOLDER = "data/bci-iv-a/subject-dependent"
+DATA_FOLDER = "data/bnci/by-subject-data-with-feedback-to-user"
+# DATA_FOLDER = "data/bci-iv-a/subject-dependent"
 
 subjects = range(1, 6)
 accuracies = {
@@ -44,8 +44,9 @@ for subject in subjects:
     features = FilterBankCSPFeatureExtraction(training_data, test_data)
 
     scale = True
-    k = 6
-    fs = MIBIFFeatureSelection(features, k, scale)
+    k = 4
+    fs = MIBIFFeatureSelection(features.training_features, features.test_features, training_data.labels,
+                               CSP_RELEVANT_FEATURES, k, scale)
 
     selected_training_features = fs.training_features
     selected_test_features = fs.test_features

@@ -26,11 +26,11 @@ def read_eeg_file(left_data_file, right_data_file, time_length, time_window, epo
 
 
 def __read_eeg_file(left_data_file, right_data_file, time_length, time_window, epoch_size=None):
-    # Read the data
+    # Read the eeg data
     left_data = extract_single_trial(load_csv(left_data_file), time_length, time_window)
     right_data = extract_single_trial(load_csv(right_data_file), time_length, time_window)
 
-    # Read the epoch data
+    # Epoch the data
     if epoch_size is not None:
         left_data = epoch(left_data, epoch_size)
         right_data = epoch(right_data, epoch_size)
