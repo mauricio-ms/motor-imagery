@@ -1,5 +1,6 @@
 from main import ROOT_DIR
 from src.data_preparation.EEG import EEG
+from src.utils.array_helper import flat
 
 import numpy as np
 import pandas as pd
@@ -21,14 +22,17 @@ def read_eeg_files(path_files, time_length=None, time_window=None, epoch_size=No
     return EEG(left_data, right_data, training)
 
 
-def read_eeg_file(left_data_file, right_data_file, time_length=None, time_window=None, epoch_size=None, training=True):
-    return EEG(*(__read_eeg_file(left_data_file, right_data_file, time_length, time_window, epoch_size)), training)
+def read_eeg_file(left_data_file, right_data_file, time_length=None, time_window=None,
+                  epoch_size=None, channels_indexes=None, training=True):
+    return EEG(*(__read_eeg_file(left_data_file, right_data_file, time_length,
+                                 time_window, epoch_size, channels_indexes)), training)
 
 
-def __read_eeg_file(left_data_file, right_data_file, time_length=None, time_window=None, epoch_size=None):
+def __read_eeg_file(left_data_file, right_data_file, time_length=None,
+                    time_window=None, epoch_size=None, channels_indexes=None):
     # Read the eeg data
-    left_data = load_csv(left_data_file)
-    right_data = load_csv(right_data_file)
+    left_data = load_csv(left_data_file, channels_indexes)
+    right_data = load_csv(right_data_file, channels_indexes)
 
     if time_length is not None and time_window is not None:
         left_data = extract_single_trial(left_data, time_length, time_window)
@@ -42,8 +46,17 @@ def __read_eeg_file(left_data_file, right_data_file, time_length=None, time_wind
     return left_data, right_data
 
 
-def load_csv(file_path):
-    return pd.read_csv(ROOT_DIR + "/" + file_path, header=None)
+def get_channels_indexes(file_path, channels_names):
+    channels_names = list(map(lambda ch: ch.upper(), channels_names))
+    channels = flat(load_csv(file_path).values)
+    return [index for index, channel in enumerate(channels) if channel.upper() in channels_names]
+
+
+def load_csv(file_path, channels_indexes=None):
+    if channels_indexes is not None:
+        return pd.read_csv(ROOT_DIR + "/" + file_path, header=None, usecols=channels_indexes)
+    else:
+        return pd.read_csv(ROOT_DIR + "/" + file_path, header=None)
 
 
 def epoch(eeg, size):
