@@ -1,8 +1,7 @@
-from src.data_preparation.data_preparation import read_eeg_file, read_eeg_files
+from src.data_preparation.data_preparation import read_eeg_file
 from scipy import signal
 from scipy import linalg
 from scipy import stats
-from sklearn.model_selection import StratifiedKFold
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 from sklearn.metrics import accuracy_score
 import pyriemann.utils.mean as rie_mean
@@ -22,7 +21,7 @@ def compute_spatial_filters(left_data, right_data):
         cov[n_trial] = np.cov(np.transpose(trial))
 
     # calculate average of covariance matrix
-    cov_1 = rie_mean.mean_covariance(cov, metric="riemann")
+    cov_1 = rie_mean.mean_covariance(cov, metric="logeuclid")
 
     # Estimate the covariance matrix of every trial
     n_right_trials = right_data.shape[0]
@@ -33,7 +32,7 @@ def compute_spatial_filters(left_data, right_data):
         cov[n_trial] = np.cov(np.transpose(trial))
 
     # calculate average of covariance matrix
-    cov_2 = rie_mean.mean_covariance(cov, metric="riemann")
+    cov_2 = rie_mean.mean_covariance(cov, metric="logeuclid")
 
     # Solve the generalized eigenvalue problem
     n_pairs = CSP_COMPONENTS // 2
@@ -69,24 +68,28 @@ def extract_features(left_data, right_data):
     return features
 
 
-def katz_fractal_temp(x):
-    dists = np.abs(np.ediff1d(x))
-    ll = dists.sum()
-    ln = np.log10(np.divide(ll, dists.mean()))
-    aux_d = x - x[0]
-    d = np.max(np.abs(aux_d[1:]))
-    return np.divide(ln, np.add(ln, np.log10(np.divide(d, ll))))
-
-
 def katz_fractal(x):
-    dists = np.abs(np.ediff1d(x))
-    L = np.sum(dists)
-    a = np.mean(dists)
-    ln = np.log10(np.divide(L, a))
-    #aux_d = x - x[0]
-    #d = np.max(np.abs(aux_d[1:]))
-    d = np.max(dists[1:])
-    return np.divide(ln, np.add(ln, np.log10(np.divide(d, L))))
+    n = len(x) - 1
+
+    # Calculate the total length L of the signal
+    L = 0
+    for n_i in range(n):
+        # Use the Euclidean distance formula to obtain the distance between the consecutive points
+        x_distance = 1
+        y_distance = (x[n_i] - x[n_i + 1]) ** 2
+        L = L + np.sqrt(x_distance + y_distance)
+
+    # Calculate the diameter of the signal, that is the farthest distance between the starting point to any other point
+    d = np.zeros(n)
+    for n_i in range(n):
+        # Use the Euclidean distance formula to obtain the distance between the points to the origin
+        x_distance = n_i ** 2
+        y_distance = (x[0] - x[n_i + 1]) ** 2
+        d[n_i] = np.sqrt(x_distance + y_distance)
+    d = np.max(d)
+
+    ln = np.log10(n)
+    return ln / (np.log10(d / L) + ln)
 
 
 def classify(X_train, Y_train, X_test, Y_test):
@@ -150,6 +153,7 @@ for test_subject in subjects:
 
     test_data.F = extract_features(test_data.left_data, test_data.right_data)
 
+    # Normalize the features
     train_data["CSP"] = stats.zscore(train_data["CSP"], axis=0)
     train_data["KATZ_FRACTAL"] = stats.zscore(train_data["KATZ_FRACTAL"], axis=0)
     test_data.F["CSP"] = stats.zscore(test_data.F["CSP"], axis=0)
